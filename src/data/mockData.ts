@@ -3,6 +3,7 @@ import type { Member, Movement, Proposal, Screen } from '../types';
 export const screens: { id: Screen; label: string }[] = [
   { id: 'landing', label: 'Landing' },
   { id: 'login', label: 'Login' },
+  { id: 'register', label: 'Cadastro' },
   { id: 'create-organization', label: 'Criar organização' },
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'treasury', label: 'Tesouraria' },

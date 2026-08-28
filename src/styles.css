@@ -115,6 +115,26 @@ textarea:focus-visible {
   margin-top: 34px;
 }
 
+.current-user {
+  display: grid;
+  gap: 4px;
+  margin-top: 26px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(232, 243, 236, 0.82);
+}
+
+.current-user span,
+.current-user small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.current-user strong {
+  color: var(--green-950);
+}
+
 .nav-list button {
   width: 100%;
   padding: 12px 14px;
@@ -368,6 +388,10 @@ textarea:focus-visible {
   width: min(430px, 100%);
 }
 
+.register-card {
+  width: min(500px, 100%);
+}
+
 .auth-card h2,
 .page-title h2 {
   margin: 10px 0;
@@ -404,6 +428,20 @@ textarea {
 .auth-card .primary-action,
 .form-panel .primary-action {
   margin-top: 18px;
+}
+
+.text-action {
+  width: 100%;
+  margin-top: 14px;
+  border: 0;
+  color: var(--green-700);
+  font-weight: 800;
+  background: transparent;
+}
+
+.text-action:hover {
+  color: var(--green-950);
+  text-decoration: underline;
 }
 
 .content-stack {

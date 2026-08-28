@@ -1,6 +1,7 @@
 export type Screen =
   | 'landing'
   | 'login'
+  | 'register'
   | 'create-organization'
   | 'dashboard'
   | 'treasury'
@@ -16,6 +17,14 @@ export type Member = {
   id: string;
   name: string;
   role: string;
+};
+
+export type UserRole = 'Membro' | 'Gestor' | 'Aprovador';
+
+export type User = {
+  name: string;
+  email: string;
+  role: UserRole;
 };
 
 export type Proposal = {

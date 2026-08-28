@@ -17,7 +17,7 @@ import {
   X,
 } from 'lucide-react';
 import { initialMovements, initialProposals, members, screens } from './data/mockData';
-import type { Movement, Proposal, ProposalStatus, Screen } from './types';
+import type { Movement, Proposal, ProposalStatus, Screen, User } from './types';
 
 const money = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
@@ -34,6 +34,7 @@ function App() {
   const [selectedProposalId, setSelectedProposalId] = useState('buffet-abc');
   const [proposals, setProposals] = useState<Proposal[]>(initialProposals);
   const [movements, setMovements] = useState<Movement[]>(initialMovements);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const selectedProposal = proposals.find((proposal) => proposal.id === selectedProposalId) ?? proposals[0];
 
@@ -60,6 +61,16 @@ function App() {
   const openProposal = (proposalId: string) => {
     setSelectedProposalId(proposalId);
     navigate('approve-expense');
+  };
+
+  const loginUser = () => {
+    setCurrentUser({ name: 'Ana Martins', email: 'ana@formatura2027.com', role: 'Aprovador' });
+    navigate('create-organization');
+  };
+
+  const registerUser = (user: User) => {
+    setCurrentUser(user);
+    navigate('create-organization');
   };
 
   const createProposal = (proposal: Pick<Proposal, 'title' | 'amount' | 'description'>) => {
@@ -145,6 +156,14 @@ function App() {
             </button>
           ))}
         </nav>
+
+        {currentUser && (
+          <div className="current-user">
+            <span>Usuário da demo</span>
+            <strong>{currentUser.name}</strong>
+            <small>{currentUser.role}</small>
+          </div>
+        )}
       </aside>
 
       <main className="main-content">
@@ -156,8 +175,9 @@ function App() {
           <Menu size={22} />
         </header>
 
-        {currentScreen === 'landing' && <Landing onStart={() => navigate('login')} onDashboard={() => navigate('dashboard')} />}
-        {currentScreen === 'login' && <Login onLogin={() => navigate('create-organization')} />}
+        {currentScreen === 'landing' && <Landing onLogin={() => navigate('login')} onRegister={() => navigate('register')} onDashboard={() => navigate('dashboard')} />}
+        {currentScreen === 'login' && <Login onLogin={loginUser} onRegister={() => navigate('register')} />}
+        {currentScreen === 'register' && <Register onRegister={registerUser} onLogin={() => navigate('login')} />}
         {currentScreen === 'create-organization' && <CreateOrganization onDone={() => navigate('dashboard')} />}
         {currentScreen === 'dashboard' && <Dashboard stats={stats} movements={movements} onNewExpense={() => navigate('new-expense')} />}
         {currentScreen === 'treasury' && <Treasury proposals={proposals} onApprove={openProposal} />}
@@ -173,7 +193,7 @@ function App() {
   );
 }
 
-function Landing({ onStart, onDashboard }: { onStart: () => void; onDashboard: () => void }) {
+function Landing({ onLogin, onRegister, onDashboard }: { onLogin: () => void; onRegister: () => void; onDashboard: () => void }) {
   return (
     <section className="hero-grid page-enter">
       <div className="hero-copy">
@@ -184,7 +204,8 @@ function Landing({ onStart, onDashboard }: { onStart: () => void; onDashboard: (
           onde movimentações importantes exigem múltiplas aprovações antes de acontecer.
         </p>
         <div className="hero-actions">
-          <button className="primary-action" onClick={onStart}>Começar demo</button>
+          <button className="primary-action" onClick={onRegister}>Criar conta</button>
+          <button className="secondary-action" onClick={onLogin}>Entrar</button>
           <button className="secondary-action" onClick={onDashboard}>Ver dashboard</button>
         </div>
         <div className="trust-row" aria-label="Principais diferenciais">
@@ -216,7 +237,7 @@ function Landing({ onStart, onDashboard }: { onStart: () => void; onDashboard: (
   );
 }
 
-function Login({ onLogin }: { onLogin: () => void }) {
+function Login({ onLogin, onRegister }: { onLogin: () => void; onRegister: () => void }) {
   return (
     <section className="center-page page-enter">
       <div className="auth-card">
@@ -226,6 +247,41 @@ function Login({ onLogin }: { onLogin: () => void }) {
         <label>E-mail<input defaultValue="ana@formatura2027.com" type="email" /></label>
         <label>Senha<input defaultValue="caixauni-demo" type="password" /></label>
         <button className="primary-action full" onClick={onLogin}>Entrar</button>
+        <button className="text-action" onClick={onRegister}>Ainda não tenho conta. Criar cadastro</button>
+      </div>
+    </section>
+  );
+}
+
+function Register({ onRegister, onLogin }: { onRegister: (user: User) => void; onLogin: () => void }) {
+  const [name, setName] = useState('Pedro Almeida');
+  const [email, setEmail] = useState('pedro@formatura2027.com');
+  const [role, setRole] = useState<User['role']>('Gestor');
+
+  const submitRegistration = () => {
+    onRegister({ name, email, role });
+  };
+
+  return (
+    <section className="center-page page-enter">
+      <div className="auth-card register-card">
+        <span className="eyebrow">Primeiro acesso</span>
+        <h2>Criar conta</h2>
+        <p>Cadastre um usuário da organização. Nesta etapa, tudo continua mockado para a demo.</p>
+        <label>Nome<input value={name} onChange={(event) => setName(event.target.value)} /></label>
+        <label>E-mail<input value={email} onChange={(event) => setEmail(event.target.value)} type="email" /></label>
+        <label>Senha<input defaultValue="caixauni-demo" type="password" /></label>
+        <label>
+          Papel inicial
+          <select value={role} onChange={(event) => setRole(event.target.value as User['role'])}>
+            <option value="Membro">Membro</option>
+            <option value="Gestor">Gestor</option>
+            <option value="Aprovador">Aprovador</option>
+          </select>
+        </label>
+        <div className="info-box"><Users size={18} /> O papel define se a pessoa consulta, cria solicitações ou aprova despesas.</div>
+        <button className="primary-action full" onClick={submitRegistration}>Criar conta</button>
+        <button className="text-action" onClick={onLogin}>Já tenho conta. Entrar</button>
       </div>
     </section>
   );
