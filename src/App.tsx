@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Menu } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { initialMovements, initialProposals, members, screens } from './data/mockData';
 import ApproveExpense from './screens/ApproveExpense';
 import Contribute from './screens/Contribute';
@@ -12,14 +12,18 @@ import Members from './screens/Members';
 import NewExpense from './screens/NewExpense';
 import Register from './screens/Register';
 import Treasury from './screens/Treasury';
+import DemoGuide from './components/DemoGuide';
+import { useLocalStorage } from './hooks/useLocalStorage';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import type { Movement, Proposal, Screen, User } from './types';
 
 function App() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('landing');
-  const [selectedProposalId, setSelectedProposalId] = useState('buffet-abc');
-  const [proposals, setProposals] = useState<Proposal[]>(initialProposals);
-  const [movements, setMovements] = useState<Movement[]>(initialMovements);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentScreen, setCurrentScreen] = useLocalStorage<Screen>('caixauni_currentScreen', 'landing');
+  const [selectedProposalId, setSelectedProposalId] = useLocalStorage('caixauni_selectedProposalId', 'buffet-abc');
+  const [proposals, setProposals] = useLocalStorage<Proposal[]>('caixauni_proposals', initialProposals);
+  const [movements, setMovements] = useLocalStorage<Movement[]>('caixauni_movements', initialMovements);
+  const [currentUser, setCurrentUser] = useLocalStorage<User | null>('caixauni_currentUser', null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const selectedProposal = proposals.find((proposal) => proposal.id === selectedProposalId) ?? proposals[0];
 
@@ -125,8 +129,10 @@ function App() {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar" aria-label="Navegação principal">
-        <button className="brand-mark brand-button" onClick={() => navigate('landing')}>
+      <div className={`mobile-overlay ${isMobileMenuOpen ? 'open' : ''}`} onClick={() => setIsMobileMenuOpen(false)} />
+      
+      <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`} aria-label="Navegação principal">
+        <button className="brand-mark brand-button" onClick={() => { navigate('landing'); setIsMobileMenuOpen(false); }}>
           <div className="brand-icon">CU</div>
           <div>
             <strong>CaixaUni</strong>
@@ -136,7 +142,7 @@ function App() {
 
         <nav className="nav-list">
           {screens.map((screen) => (
-            <button key={screen.id} className={currentScreen === screen.id ? 'active' : ''} onClick={() => navigate(screen.id)}>
+            <button key={screen.id} className={currentScreen === screen.id ? 'active' : ''} onClick={() => { navigate(screen.id); setIsMobileMenuOpen(false); }}>
               {screen.label}
             </button>
           ))}
@@ -149,6 +155,10 @@ function App() {
             <small>{currentUser.role}</small>
           </div>
         )}
+        
+        <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
+          <WalletMultiButton style={{ width: '100%', justifyContent: 'center' }} />
+        </div>
       </aside>
 
       <main className="main-content">
@@ -157,7 +167,9 @@ function App() {
             <div className="brand-icon">CU</div>
             <strong>CaixaUni</strong>
           </div>
-          <Menu size={22} />
+          <button className="mobile-menu-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
         </header>
 
         {currentScreen === 'landing' && <Landing onLogin={() => navigate('login')} onRegister={() => navigate('register')} onDashboard={() => navigate('dashboard')} />}
@@ -172,6 +184,8 @@ function App() {
         {currentScreen === 'members' && <Members />}
         {currentScreen === 'contribute' && <Contribute />}
       </main>
+
+      <DemoGuide currentScreen={currentScreen} onNavigate={navigate} />
     </div>
   );
 }

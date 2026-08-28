@@ -308,6 +308,15 @@ src/
 └── vite-env.d.ts
 ```
 
+### 6. Produto, UX e Persistência de Dados (Modo Demo)
+
+Foi implementado um modo demonstração focado em guiar os avaliadores:
+- **Modo Demo Guiado**: Componente interativo que orienta o passo-a-passo (Criar organização → Criar despesa → Aprovar → Histórico).
+- **Persistência em localStorage**: Todo o estado da aplicação agora é salvo no navegador (currentScreen, proposals, movements, currentUser), impedindo que a demonstração quebre com um recarregamento.
+- **Evidências Documentais**: Adicionada seção na Landing Page com os casos reais (Medicina USP e Direito SC) justificando a tese.
+- **Mock Visual da Camada Web3**: Inserido um bloco na Landing Page ilustrando a arquitetura: CaixaUni → Squads → Solana.
+- **Melhoria Mobile**: Menu lateral ajustado para responsividade em dispositivos móveis (overlay e toggle funcional).
+
 ## Comandos do Projeto
 
 Instalar dependências:
@@ -356,95 +365,53 @@ Resultado esperado:
 
 ## O Que Falta Fazer
 
-### Produto e UX
+### Backend (Mínimo / Opcional)
 
-- Criar modo demo guiado para pitch.
-- Melhorar navegação mobile.
-- Adicionar estados vazios mais claros.
-- Melhorar feedback visual após criação de despesa.
-- Criar uma tela ou seção explicando melhor a tese do projeto.
-- Adicionar cards de pesquisa documental quando os casos forem levantados.
+- Definir necessidade real de backend para a demo (podemos interagir direto com RPC).
+- Se necessário, criar API leve para persistir metadados das propostas, pois a blockchain armazena os hashes/assinaturas, mas não precisa armazenar os títulos longos e descrições para economizar custos.
 
-### Frontend
+### Web3 e Solana (Squads Protocol)
 
-- Persistir estado local em `localStorage` para a demo não reiniciar ao recarregar.
-- Criar validações simples nos formulários.
-- Criar layout mobile com menu funcional.
-- Melhorar acessibilidade dos formulários e navegação.
-- Adicionar testes básicos se houver tempo.
-
-### Backend
-
-- Definir stack do backend.
-- Criar API para usuários.
-- Criar API para organizações.
-- Criar API para propostas de despesa.
-- Criar API para aprovações.
-- Criar persistência em banco tradicional.
-- Criar autenticação real.
-
-### Web3 e Solana
-
-- Estudar integração com Squads.
-- Definir como criar ou referenciar uma multisig.
-- Mapear proposta CaixaUni para proposta Squads.
-- Simular ou integrar aprovação real via Squads.
-- Avaliar integração Solana Pay para contribuições.
-- Evitar complexidade Web3 visível para o usuário final.
+- Estudar integração com a SDK do Squads Protocol.
+- Criar a funcionalidade de "Criar Multisig" atrelada à organização.
+- Mapear a aprovação simulada do CaixaUni para a submissão real de assinaturas no contrato multisig do Squads.
+- Confirmar execução (Liquidação) na Solana após atingir a regra de 3/5.
+- Avaliar integração Solana Pay para contribuições (Bônus).
 
 ### Pesquisa e Pitch
 
-- Montar dossiê documental com 5 a 10 casos brasileiros.
-- Selecionar 2 ou 3 casos fortes para apresentação.
-- Criar roteiro de vídeo com menos de 5 minutos.
+- Montar dossiê documental estendido (se desejar mais casos).
+- Criar roteiro de vídeo de até 5 minutos baseado na Landing Page.
 - Criar slides.
-- Declarar uso de IA conforme exigência da hackathon.
-- Preparar link público da aplicação.
+- Gravar a demonstração guiada.
 
 ## Próximas Etapas Recomendadas
 
 ### Próxima etapa técnica imediata
 
-Criar modo demo guiado.
+Iniciar a modelagem de integração com a blockchain (Squads/Solana).
 
 Objetivo:
-
 ```text
-Conduzir a banca pelo fluxo principal sem depender de explicação manual.
-```
-
-Passos sugeridos:
-
-```text
-1. Criar organização
-2. Criar despesa
-3. Aprovar com responsáveis
-4. Atingir 3/5
-5. Mostrar movimentação autorizada
-6. Mostrar histórico atualizado
+Sair do "mock" no processo de aprovação e provar a tese utilizando uma infraestrutura real on-chain.
 ```
 
 ### Depois disso
 
-Persistir estado local com `localStorage`.
+Definição de Backend / Indexador.
 
 Objetivo:
-
 ```text
-Evitar que a demo zere se a página for recarregada durante apresentação ou gravação.
-```
-
-### Depois da persistência
-
-Criar mock visual da camada Squads/Solana.
-
-Objetivo:
-
-```text
-Mostrar claramente que a aprovação coletiva está conectada ao conceito de multisig, mesmo antes da integração real.
+Entender se a aplicação Next/React falará 100% com a rede Solana via RPC ou se um backend auxiliar será usado para dados off-chain das comissões (nomes, descrições).
 ```
 
 ## Mensagens de Commit Sugeridas
+
+Para as melhorias do modo demo e persistência:
+
+```text
+feat: add guided demo mode, localStorage persistence and landing evidence
+```
 
 Para a criação inicial do frontend:
 

@@ -255,16 +255,19 @@ Usar pnpm. Não usar npm.
 
 ## O Que Falta Fazer
 
-Próximas tarefas importantes:
-
+As seguintes tarefas **já foram concluídas** para o modo demonstração:
 - criar modo demo guiado para o pitch;
 - salvar estado no navegador com localStorage;
 - melhorar navegação mobile;
-- adicionar validações simples nos formulários;
-- criar uma seção visual com os casos reais pesquisados;
-- preparar mock visual da integração com Squads;
-- depois estudar integração real com Solana/Squads;
-- depois criar backend se houver tempo.
+- criar uma seção visual com os casos reais pesquisados na Landing Page;
+- preparar mock visual da integração com Squads/Solana.
+
+Próximas tarefas importantes (Integração e Backend):
+
+- iniciar integração com a SDK do Squads Protocol para criar propostas multisig reais;
+- definir se utilizaremos chamadas RPC diretas do frontend ou se criaremos um backend auxiliar;
+- caso opte por backend, definir a stack (ex: Node/TypeScript) e criar rotas para metadados (nome da comissão, descrições);
+- se houver tempo, desenvolver a parte de contribuições via Solana Pay.
 
 ## O Que Falar No Pitch
 

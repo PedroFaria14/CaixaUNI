@@ -17,6 +17,7 @@ export type Member = {
   id: string;
   name: string;
   role: string;
+  pubkey?: string;
 };
 
 export type UserRole = 'Membro' | 'Gestor' | 'Aprovador';

@@ -15,11 +15,11 @@ export const screens: { id: Screen; label: string }[] = [
 ];
 
 export const members: Member[] = [
-  { id: 'ana', name: 'Ana', role: 'Aprovadora' },
-  { id: 'pedro', name: 'Pedro', role: 'Gestor' },
-  { id: 'joao', name: 'João', role: 'Membro' },
-  { id: 'maria', name: 'Maria', role: 'Aprovadora' },
-  { id: 'lucas', name: 'Lucas', role: 'Membro' },
+  { id: 'ana', name: 'Ana', role: 'Aprovadora', pubkey: 'wgDgLVv9eWL81hdrL2m4BWpwDcntCSM5TqTQjD4xkXK' },
+  { id: 'pedro', name: 'Pedro', role: 'Gestor', pubkey: 'HMhVMmJRQ3LDzcQiqseGLmaXz9aTbBe4sbZNBpy74uiU' },
+  { id: 'joao', name: 'João', role: 'Membro', pubkey: '4Tz1qJYJNLajxCVDt9uydUx14HgmR9Ke2UWjnyc2yeSX' },
+  { id: 'maria', name: 'Maria', role: 'Aprovadora', pubkey: '4qUzjWDoU7AFVEmezbvL46QjX5PjB1zrZMpNCuwahjeP' },
+  { id: 'lucas', name: 'Lucas', role: 'Membro', pubkey: 'Fonq7xaLjX83mciKUwogjLqpe17hfXQMJpDHd4Fdkfai' },
 ];
 
 export const initialProposals: Proposal[] = [

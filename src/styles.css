@@ -70,6 +70,8 @@ textarea:focus-visible {
   border-right: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(18px);
+  display: flex;
+  flex-direction: column;
 }
 
 .brand-mark {
@@ -737,13 +739,148 @@ textarea {
   background-size: 28px 28px;
 }
 
+/* Demo Guide */
+.demo-guide {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12);
+  width: 320px;
+  z-index: 9999;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.demo-guide.minimized {
+  width: auto;
+  min-width: 200px;
+}
+
+.demo-guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--green-900);
+  color: white;
+}
+
+.demo-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.close-demo {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 4px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+}
+
+.close-demo:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.demo-steps {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.demo-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: var(--muted);
+}
+
+.demo-step:hover {
+  background: rgba(0,0,0,0.03);
+}
+
+.demo-step.active {
+  background: var(--green-100);
+  color: var(--green-900);
+  font-weight: 500;
+}
+
+.demo-step.completed {
+  color: var(--green-700);
+}
+
+.step-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-content {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.step-number {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.step-title {
+  font-size: 0.95rem;
+}
+
+/* Mobile Menu Updates */
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 40;
+  backdrop-filter: blur(2px);
+}
+
+.mobile-overlay.open {
+  display: block;
+}
+
+.mobile-menu-toggle {
+  background: transparent;
+  border: none;
+  color: var(--ink);
+  padding: 4px;
+}
+
 @media (max-width: 980px) {
   .app-shell {
     display: block;
   }
 
   .sidebar {
-    display: none;
+    position: fixed;
+    transform: translateX(-100%);
+    z-index: 50;
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
   }
 
   .mobile-header {
@@ -807,4 +944,136 @@ textarea {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Evidence and Architecture Sections */
+.evidence-section,
+.architecture-section {
+  padding: 60px 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.evidence-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.evidence-header h2 {
+  font-size: 2rem;
+  margin-bottom: 12px;
+  color: var(--green-950);
+}
+
+.evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.evidence-card {
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.evidence-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--red-500);
+  color: white;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.evidence-card h3 {
+  font-size: 1.8rem;
+  margin-bottom: 4px;
+  color: var(--green-950);
+}
+
+.evidence-card p {
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.evidence-vuln {
+  display: block;
+  padding: 12px;
+  background: #fff5f5;
+  color: #c53030;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.evidence-conclusion {
+  text-align: center;
+  padding: 20px;
+  background: var(--green-900);
+  color: white;
+  border-radius: 12px;
+  font-size: 1.1rem;
+}
+
+.architecture-section {
+  text-align: center;
+  background: white;
+  border-radius: 24px;
+  margin-bottom: 60px;
+  border: 1px solid var(--line);
+}
+
+.architecture-mock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40px;
+}
+
+.arch-layer {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.arch-layer strong {
+  font-size: 1.2rem;
+}
+
+.arch-layer span {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.app-layer {
+  background: var(--green-100);
+  color: var(--green-950);
+  border: 2px solid var(--green-500);
+}
+
+.web3-layer {
+  background: var(--green-900);
+  color: white;
+}
+
+.solana-layer {
+  background: linear-gradient(90deg, #14F195, #9945FF);
+  color: white;
+}
+
+.arch-arrow {
+  padding: 12px 0;
+  color: var(--muted);
+  font-weight: bold;
 }
