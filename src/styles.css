@@ -80,6 +80,13 @@ textarea:focus-visible {
   background: transparent;
 }
 
+.brand-button {
+  width: 100%;
+  padding: 0;
+  color: inherit;
+  text-align: left;
+}
+
 .brand-mark strong {
   display: block;
   font-size: 1.05rem;
@@ -607,6 +614,51 @@ textarea {
 
 .approval-ok { color: var(--green-700) !important; }
 .approval-wait { color: var(--orange-500) !important; }
+
+.approver-action {
+  align-items: flex-start;
+}
+
+.mini-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.approve-mini,
+.reject-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 900;
+  background: white;
+  transition: 0.18s ease;
+}
+
+.approve-mini {
+  color: var(--green-700);
+}
+
+.reject-mini {
+  color: var(--red-500);
+}
+
+.approve-mini:hover:not(:disabled),
+.reject-mini:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.approve-mini:disabled,
+.reject-mini:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
 
 .member-card {
   text-align: center;

@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -15,118 +16,131 @@ import {
   Users,
   X,
 } from 'lucide-react';
-
-type Screen =
-  | 'landing'
-  | 'login'
-  | 'create-organization'
-  | 'dashboard'
-  | 'treasury'
-  | 'new-expense'
-  | 'approve-expense'
-  | 'history'
-  | 'members'
-  | 'contribute';
-
-type ProposalStatus = 'pending' | 'approved' | 'blocked';
-
-type Member = {
-  name: string;
-  role: string;
-  approved: boolean;
-};
-
-type Proposal = {
-  title: string;
-  description: string;
-  amount: number;
-  approvals: number;
-  threshold: number;
-  totalApprovers: number;
-  status: ProposalStatus;
-};
-
-const screens: { id: Screen; label: string }[] = [
-  { id: 'landing', label: 'Landing' },
-  { id: 'login', label: 'Login' },
-  { id: 'create-organization', label: 'Criar organização' },
-  { id: 'dashboard', label: 'Dashboard' },
-  { id: 'treasury', label: 'Tesouraria' },
-  { id: 'new-expense', label: 'Criar despesa' },
-  { id: 'approve-expense', label: 'Aprovar despesa' },
-  { id: 'history', label: 'Histórico' },
-  { id: 'members', label: 'Membros' },
-  { id: 'contribute', label: 'Contribuir' },
-];
-
-const members: Member[] = [
-  { name: 'Ana', role: 'Aprovadora', approved: true },
-  { name: 'Pedro', role: 'Gestor', approved: true },
-  { name: 'João', role: 'Membro', approved: false },
-  { name: 'Maria', role: 'Aprovadora', approved: true },
-  { name: 'Lucas', role: 'Membro', approved: false },
-];
-
-const proposals: Proposal[] = [
-  {
-    title: 'Buffet ABC',
-    description: 'Entrada de 30% para reserva da data.',
-    amount: 12000,
-    approvals: 3,
-    threshold: 3,
-    totalApprovers: 5,
-    status: 'approved',
-  },
-  {
-    title: 'Fotografia',
-    description: 'Contrato de cobertura do evento principal.',
-    amount: 4800,
-    approvals: 3,
-    threshold: 3,
-    totalApprovers: 5,
-    status: 'approved',
-  },
-  {
-    title: 'Decoração',
-    description: 'Sinalização e ambientação do salão.',
-    amount: 6200,
-    approvals: 1,
-    threshold: 3,
-    totalApprovers: 5,
-    status: 'blocked',
-  },
-];
+import { initialMovements, initialProposals, members, screens } from './data/mockData';
+import type { Movement, Proposal, ProposalStatus, Screen } from './types';
 
 const money = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
   currency: 'BRL',
 });
 
+function getProposalStatus(proposal: Proposal): ProposalStatus {
+  if (proposal.approvals.length >= proposal.threshold) return 'approved';
+  return proposal.rejectedBy.length > 0 ? 'blocked' : 'pending';
+}
+
 function App() {
-  const currentScreen = (window.location.hash.replace('#', '') || 'landing') as Screen;
+  const [currentScreen, setCurrentScreen] = useState<Screen>('landing');
+  const [selectedProposalId, setSelectedProposalId] = useState('buffet-abc');
+  const [proposals, setProposals] = useState<Proposal[]>(initialProposals);
+  const [movements, setMovements] = useState<Movement[]>(initialMovements);
+
+  const selectedProposal = proposals.find((proposal) => proposal.id === selectedProposalId) ?? proposals[0];
+
+  const stats = useMemo(() => {
+    const received = 221500 + movements.filter((movement) => movement.type === 'income').reduce((sum, movement) => sum + movement.value, 0);
+    const spent = movements.filter((movement) => movement.type === 'expense').reduce((sum, movement) => sum + movement.value, 37150);
+    const balance = received - spent;
+    const target = 250000;
+
+    return {
+      received,
+      spent,
+      balance,
+      target,
+      progress: Math.min(Math.round((received / target) * 100), 100),
+    };
+  }, [movements]);
 
   const navigate = (screen: Screen) => {
     window.location.hash = screen;
+    setCurrentScreen(screen);
+  };
+
+  const openProposal = (proposalId: string) => {
+    setSelectedProposalId(proposalId);
+    navigate('approve-expense');
+  };
+
+  const createProposal = (proposal: Pick<Proposal, 'title' | 'amount' | 'description'>) => {
+    const id = `${proposal.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`;
+    const nextProposal: Proposal = {
+      ...proposal,
+      id,
+      createdBy: 'Pedro',
+      approvals: [],
+      rejectedBy: [],
+      threshold: 3,
+      totalApprovers: members.length,
+    };
+
+    setProposals((current) => [nextProposal, ...current]);
+    setSelectedProposalId(id);
+    navigate('approve-expense');
+  };
+
+  const approveProposal = (proposalId: string, memberId: string) => {
+    const currentProposal = proposals.find((proposal) => proposal.id === proposalId);
+    if (!currentProposal || currentProposal.approvals.includes(memberId)) return;
+
+    const approvals = [...currentProposal.approvals, memberId];
+    const wasApproved = currentProposal.approvals.length >= currentProposal.threshold;
+    const becomesApproved = approvals.length >= currentProposal.threshold;
+
+    setProposals((current) =>
+      current.map((proposal) =>
+        proposal.id === proposalId
+          ? {
+              ...proposal,
+              approvals,
+              rejectedBy: proposal.rejectedBy.filter((id) => id !== memberId),
+            }
+          : proposal,
+      ),
+    );
+
+    if (!wasApproved && becomesApproved) {
+      setMovements((movementsList) => [
+        {
+          id: `movement-${currentProposal.id}`,
+          title: currentProposal.title,
+          value: currentProposal.amount,
+          detail: `✓ ${approvals.length}/${currentProposal.totalApprovers} aprovações`,
+          type: 'expense',
+        },
+        ...movementsList,
+      ]);
+    }
+  };
+
+  const rejectProposal = (proposalId: string, memberId: string) => {
+    setProposals((current) =>
+      current.map((proposal) =>
+        proposal.id === proposalId && !proposal.rejectedBy.includes(memberId)
+          ? {
+              ...proposal,
+              rejectedBy: [...proposal.rejectedBy, memberId],
+              approvals: proposal.approvals.filter((id) => id !== memberId),
+            }
+          : proposal,
+      ),
+    );
   };
 
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="Navegação principal">
-        <div className="brand-mark" onClick={() => navigate('landing')} role="button" tabIndex={0}>
+        <button className="brand-mark brand-button" onClick={() => navigate('landing')}>
           <div className="brand-icon">CU</div>
           <div>
             <strong>CaixaUni</strong>
             <span>Decisões coletivas</span>
           </div>
-        </div>
+        </button>
 
         <nav className="nav-list">
           {screens.map((screen) => (
-            <button
-              key={screen.id}
-              className={currentScreen === screen.id ? 'active' : ''}
-              onClick={() => navigate(screen.id)}
-            >
+            <button key={screen.id} className={currentScreen === screen.id ? 'active' : ''} onClick={() => navigate(screen.id)}>
               {screen.label}
             </button>
           ))}
@@ -142,14 +156,16 @@ function App() {
           <Menu size={22} />
         </header>
 
-        {currentScreen === 'landing' && <Landing onStart={() => navigate('login')} />}
+        {currentScreen === 'landing' && <Landing onStart={() => navigate('login')} onDashboard={() => navigate('dashboard')} />}
         {currentScreen === 'login' && <Login onLogin={() => navigate('create-organization')} />}
         {currentScreen === 'create-organization' && <CreateOrganization onDone={() => navigate('dashboard')} />}
-        {currentScreen === 'dashboard' && <Dashboard onNewExpense={() => navigate('new-expense')} />}
-        {currentScreen === 'treasury' && <Treasury onApprove={() => navigate('approve-expense')} />}
-        {currentScreen === 'new-expense' && <NewExpense onCreate={() => navigate('approve-expense')} />}
-        {currentScreen === 'approve-expense' && <ApproveExpense />}
-        {currentScreen === 'history' && <History />}
+        {currentScreen === 'dashboard' && <Dashboard stats={stats} movements={movements} onNewExpense={() => navigate('new-expense')} />}
+        {currentScreen === 'treasury' && <Treasury proposals={proposals} onApprove={openProposal} />}
+        {currentScreen === 'new-expense' && <NewExpense onCreate={createProposal} />}
+        {currentScreen === 'approve-expense' && selectedProposal && (
+          <ApproveExpense proposal={selectedProposal} onApprove={approveProposal} onReject={rejectProposal} />
+        )}
+        {currentScreen === 'history' && <History movements={movements} />}
         {currentScreen === 'members' && <Members />}
         {currentScreen === 'contribute' && <Contribute />}
       </main>
@@ -157,7 +173,7 @@ function App() {
   );
 }
 
-function Landing({ onStart }: { onStart: () => void }) {
+function Landing({ onStart, onDashboard }: { onStart: () => void; onDashboard: () => void }) {
   return (
     <section className="hero-grid page-enter">
       <div className="hero-copy">
@@ -169,7 +185,7 @@ function Landing({ onStart }: { onStart: () => void }) {
         </p>
         <div className="hero-actions">
           <button className="primary-action" onClick={onStart}>Começar demo</button>
-          <button className="secondary-action" onClick={() => (window.location.hash = 'dashboard')}>Ver dashboard</button>
+          <button className="secondary-action" onClick={onDashboard}>Ver dashboard</button>
         </div>
         <div className="trust-row" aria-label="Principais diferenciais">
           <span><ShieldCheck size={16} /> Regra 3 de 5</span>
@@ -207,14 +223,8 @@ function Login({ onLogin }: { onLogin: () => void }) {
         <span className="eyebrow">Acesso do protótipo</span>
         <h2>Entrar no CaixaUni</h2>
         <p>Use a jornada fake para demonstrar uma experiência Web3 invisível.</p>
-        <label>
-          E-mail
-          <input defaultValue="ana@formatura2027.com" type="email" />
-        </label>
-        <label>
-          Senha
-          <input defaultValue="caixauni-demo" type="password" />
-        </label>
+        <label>E-mail<input defaultValue="ana@formatura2027.com" type="email" /></label>
+        <label>Senha<input defaultValue="caixauni-demo" type="password" /></label>
         <button className="primary-action full" onClick={onLogin}>Entrar</button>
       </div>
     </section>
@@ -236,14 +246,14 @@ function CreateOrganization({ onDone }: { onDone: () => void }) {
           <h3>Regra de aprovação</h3>
           <div className="threshold-big">3 de 5</div>
           <p>Qualquer movimentação relevante só é autorizada quando pelo menos três responsáveis aprovam.</p>
-          <div className="member-dots">{members.map((member) => <span key={member.name}>{member.name}</span>)}</div>
+          <div className="member-dots">{members.map((member) => <span key={member.id}>{member.name}</span>)}</div>
         </div>
       </div>
     </section>
   );
 }
 
-function Dashboard({ onNewExpense }: { onNewExpense: () => void }) {
+function Dashboard({ stats, movements, onNewExpense }: { stats: { received: number; spent: number; balance: number; target: number; progress: number }; movements: Movement[]; onNewExpense: () => void }) {
   return (
     <section className="content-stack page-enter">
       <div className="topline">
@@ -251,69 +261,94 @@ function Dashboard({ onNewExpense }: { onNewExpense: () => void }) {
         <button className="primary-action" onClick={onNewExpense}><Plus size={18} /> Nova despesa</button>
       </div>
       <div className="metrics-grid">
-        <Metric label="Saldo" value="R$ 184.350" icon={<Banknote />} tone="green" />
-        <Metric label="Meta" value="R$ 250.000" icon={<Landmark />} tone="blue" />
-        <Metric label="Recebido" value="R$ 221.500" icon={<ArrowUpRight />} tone="green" />
-        <Metric label="Gasto" value="R$ 37.150" icon={<ArrowDownRight />} tone="orange" />
+        <Metric label="Saldo" value={money.format(stats.balance)} icon={<Banknote />} tone="green" />
+        <Metric label="Meta" value={money.format(stats.target)} icon={<Landmark />} tone="blue" />
+        <Metric label="Recebido" value={money.format(stats.received)} icon={<ArrowUpRight />} tone="green" />
+        <Metric label="Gasto" value={money.format(stats.spent)} icon={<ArrowDownRight />} tone="orange" />
       </div>
       <div className="panel progress-panel">
-        <div className="progress-header"><strong>Progresso da meta</strong><span>74%</span></div>
-        <div className="progress-track"><div style={{ width: '74%' }} /></div>
+        <div className="progress-header"><strong>Progresso da meta</strong><span>{stats.progress}%</span></div>
+        <div className="progress-track"><div style={{ width: `${stats.progress}%` }} /></div>
       </div>
-      <MovementList />
+      <MovementList movements={movements} label="Atualizado pelo fluxo de aprovação" />
     </section>
   );
 }
 
-function Treasury({ onApprove }: { onApprove: () => void }) {
+function Treasury({ proposals, onApprove }: { proposals: Proposal[]; onApprove: (proposalId: string) => void }) {
   return (
     <section className="content-stack page-enter">
       <PageTitle eyebrow="Tesouraria" title="Solicitações de movimentação" description="Acompanhe despesas aprovadas, pendentes e bloqueadas pela regra coletiva." />
       <div className="proposal-grid">
-        {proposals.map((proposal) => <ProposalCard key={proposal.title} proposal={proposal} onApprove={onApprove} />)}
+        {proposals.map((proposal) => <ProposalCard key={proposal.id} proposal={proposal} onApprove={() => onApprove(proposal.id)} />)}
       </div>
     </section>
   );
 }
 
-function NewExpense({ onCreate }: { onCreate: () => void }) {
+function NewExpense({ onCreate }: { onCreate: (proposal: Pick<Proposal, 'title' | 'amount' | 'description'>) => void }) {
+  const [title, setTitle] = useState('Buffet ABC');
+  const [amount, setAmount] = useState('12000');
+  const [description, setDescription] = useState('Entrada de 30% para reserva da data do evento.');
+
+  const submitProposal = () => {
+    onCreate({ title, amount: Number(amount), description });
+  };
+
   return (
     <section className="content-stack page-enter">
       <PageTitle eyebrow="Nova solicitação" title="Criar despesa" description="O gestor solicita a despesa, mas a movimentação só acontece após o threshold de aprovações." />
       <div className="panel form-panel wide">
-        <label>Fornecedor<input defaultValue="Buffet ABC" /></label>
-        <label>Valor<input defaultValue="12000" /></label>
-        <label>Justificativa<textarea defaultValue="Entrada de 30% para reserva da data do evento." /></label>
+        <label>Fornecedor<input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
+        <label>Valor<input value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="numeric" /></label>
+        <label>Justificativa<textarea value={description} onChange={(event) => setDescription(event.target.value)} /></label>
         <div className="info-box"><ShieldCheck size={18} /> Esta solicitação será enviada para aprovação 3 de 5 via Squads.</div>
-        <button className="primary-action" onClick={onCreate}>Criar solicitação</button>
+        <button className="primary-action" onClick={submitProposal}>Criar solicitação</button>
       </div>
     </section>
   );
 }
 
-function ApproveExpense() {
+function ApproveExpense({ proposal, onApprove, onReject }: { proposal: Proposal; onApprove: (proposalId: string, memberId: string) => void; onReject: (proposalId: string, memberId: string) => void }) {
+  const status = getProposalStatus(proposal);
+  const statusLabel = status === 'approved' ? 'Autorizada' : status === 'blocked' ? 'Bloqueada' : 'Aguardando aprovações';
+
   return (
     <section className="content-stack page-enter">
-      <PageTitle eyebrow="Aprovação coletiva" title="Buffet ABC — R$ 12.000" description="Para o usuário, é uma aprovação simples. Por trás, a regra multisig participa da movimentação." />
+      <PageTitle eyebrow="Aprovação coletiva" title={`${proposal.title} — ${money.format(proposal.amount)}`} description="Para o usuário, é uma aprovação simples. Por trás, a regra multisig participa da movimentação." />
       <div className="approval-layout">
         <div className="panel approval-card">
-          <span className="status-pill approved"><Check size={15} /> 3/5 aprovado</span>
-          <h3>Entrada de 30% para reserva.</h3>
-          <p>Solicitação criada por Pedro para reservar o buffet do evento principal da formatura.</p>
-          <div className="approval-actions">
-            <button className="primary-action"><Check size={18} /> Aprovar</button>
-            <button className="secondary-action"><X size={18} /> Rejeitar</button>
+          <span className={`status-pill ${status}`}>
+            {status === 'approved' ? <Check size={15} /> : <Lock size={15} />} {proposal.approvals.length}/{proposal.threshold} • {statusLabel}
+          </span>
+          <h3>{proposal.description}</h3>
+          <p>Solicitação criada por {proposal.createdBy}. A movimentação só entra no histórico financeiro quando atingir 3 aprovações.</p>
+          <div className="progress-track"><div style={{ width: `${Math.min((proposal.approvals.length / proposal.threshold) * 100, 100)}%` }} /></div>
+          <div className={status === 'approved' ? 'approved-label' : 'blocked-label'}>
+            {status === 'approved' ? <Check size={16} /> : <Clock3 size={16} />} {status === 'approved' ? 'Movimentação autorizada' : 'Movimentação ainda bloqueada'}
           </div>
         </div>
         <div className="panel">
           <h3>Responsáveis</h3>
           <div className="approver-list">
-            {members.map((member) => (
-              <div className="approver" key={member.name}>
-                <div><strong>{member.name}</strong><span>{member.role}</span></div>
-                {member.approved ? <span className="approval-ok"><Check size={15} /> Aprovou</span> : <span className="approval-wait"><Clock3 size={15} /> Pendente</span>}
-              </div>
-            ))}
+            {members.map((member) => {
+              const approved = proposal.approvals.includes(member.id);
+              const rejected = proposal.rejectedBy.includes(member.id);
+
+              return (
+                <div className="approver approver-action" key={member.id}>
+                  <div><strong>{member.name}</strong><span>{member.role}</span></div>
+                  <div className="mini-actions">
+                    <button className="approve-mini" disabled={approved || status === 'approved'} onClick={() => onApprove(proposal.id, member.id)}>
+                      {approved ? <><Check size={15} /> Aprovou</> : <><Check size={15} /> Aprovar</>}
+                    </button>
+                    <button className="reject-mini" disabled={rejected || status === 'approved'} onClick={() => onReject(proposal.id, member.id)}>
+                      {rejected ? <><X size={15} /> Rejeitou</> : <><X size={15} /> Rejeitar</>}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -321,11 +356,11 @@ function ApproveExpense() {
   );
 }
 
-function History() {
+function History({ movements }: { movements: Movement[] }) {
   return (
     <section className="content-stack page-enter">
       <PageTitle eyebrow="Histórico verificável" title="Movimentações" description="Registro claro do que foi solicitado, aprovado e movimentado." />
-      <MovementList />
+      <MovementList movements={movements} label="Entradas e despesas autorizadas" />
     </section>
   );
 }
@@ -336,7 +371,7 @@ function Members() {
       <PageTitle eyebrow="Governança" title="Membros e papéis" description="Uma pessoa pode consultar, criar solicitações ou aprovar, conforme seu papel." />
       <div className="member-grid">
         {members.map((member) => (
-          <div className="panel member-card" key={member.name}>
+          <div className="panel member-card" key={member.id}>
             <div className="avatar">{member.name[0]}</div>
             <h3>{member.name}</h3>
             <span>{member.role}</span>
@@ -388,37 +423,38 @@ function Metric({ label, value, icon, tone }: { label: string; value: string; ic
   );
 }
 
-function MovementList() {
+function MovementList({ movements, label }: { movements: Movement[]; label: string }) {
   return (
     <div className="panel">
-      <div className="section-header"><h3>Últimas movimentações</h3><span>Demo mockada</span></div>
+      <div className="section-header"><h3>Últimas movimentações</h3><span>{label}</span></div>
       <div className="movement-list">
-        <Movement title="Buffet" value="- R$ 12.000" detail="✓ 3/5 aprovações" />
-        <Movement title="Fotografia" value="- R$ 4.800" detail="✓ 3/5 aprovações" />
-        <Movement title="Mensalidades" value="+ R$ 7.500" detail="Solana Pay" positive />
+        {movements.map((movement) => <MovementRow key={movement.id} movement={movement} />)}
       </div>
     </div>
   );
 }
 
-function Movement({ title, value, detail, positive = false }: { title: string; value: string; detail: string; positive?: boolean }) {
+function MovementRow({ movement }: { movement: Movement }) {
+  const positive = movement.type === 'income';
   return (
     <div className="movement-item">
-      <div><strong>{title}</strong><span>{detail}</span></div>
-      <b className={positive ? 'positive' : 'negative'}>{value}</b>
+      <div><strong>{movement.title}</strong><span>{movement.detail}</span></div>
+      <b className={positive ? 'positive' : 'negative'}>{positive ? '+' : '-'} {money.format(movement.value)}</b>
     </div>
   );
 }
 
 function ProposalCard({ proposal, onApprove }: { proposal: Proposal; onApprove: () => void }) {
-  const approved = proposal.status === 'approved';
+  const status = getProposalStatus(proposal);
   return (
     <div className="panel proposal-card">
-      <span className={`status-pill ${approved ? 'approved' : proposal.status}`}>{approved ? <Check size={15} /> : <Lock size={15} />} {proposal.approvals}/{proposal.threshold} aprovações</span>
+      <span className={`status-pill ${status}`}>
+        {status === 'approved' ? <Check size={15} /> : <Lock size={15} />} {proposal.approvals.length}/{proposal.threshold} aprovações
+      </span>
       <h3>{proposal.title}</h3>
       <p>{proposal.description}</p>
       <strong className="proposal-amount">{money.format(proposal.amount)}</strong>
-      <div className="progress-track compact"><div style={{ width: `${(proposal.approvals / proposal.threshold) * 100}%` }} /></div>
+      <div className="progress-track compact"><div style={{ width: `${Math.min((proposal.approvals.length / proposal.threshold) * 100, 100)}%` }} /></div>
       <button className="secondary-action full" onClick={onApprove}>Ver aprovação</button>
     </div>
   );
