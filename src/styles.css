@@ -1107,7 +1107,9 @@ textarea {
   .proposal-grid,
   .member-grid,
   .web3-steps,
-  .execution-rail {
+  .execution-rail,
+  .problem-pattern-section,
+  .comparison-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -1121,7 +1123,9 @@ textarea {
   .proposal-grid,
   .member-grid,
   .web3-steps,
-  .execution-rail {
+  .execution-rail,
+  .problem-pattern-section,
+  .comparison-grid {
     grid-template-columns: 1fr;
   }
 
