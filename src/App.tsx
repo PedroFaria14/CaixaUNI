@@ -24,6 +24,7 @@ function App() {
   const [movements, setMovements] = useLocalStorage<Movement[]>('caixauni_movements', initialMovements);
   const [currentUser, setCurrentUser] = useLocalStorage<User | null>('caixauni_currentUser', null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [feedback, setFeedback] = useState('');
 
   const selectedProposal = proposals.find((proposal) => proposal.id === selectedProposalId) ?? proposals[0];
 
@@ -47,6 +48,11 @@ function App() {
     setCurrentScreen(screen);
   };
 
+  const showFeedback = (message: string) => {
+    setFeedback(message);
+    window.setTimeout(() => setFeedback(''), 3200);
+  };
+
   const openProposal = (proposalId: string) => {
     setSelectedProposalId(proposalId);
     navigate('approve-expense');
@@ -54,11 +60,13 @@ function App() {
 
   const loginUser = () => {
     setCurrentUser({ name: 'Ana Martins', email: 'ana@formatura2027.com', role: 'Aprovador' });
+    showFeedback('Modo demo iniciado com usuário aprovador.');
     navigate('create-organization');
   };
 
   const registerUser = (user: User) => {
     setCurrentUser(user);
+    showFeedback(`Conta demo criada para ${user.name}.`);
     navigate('create-organization');
   };
 
@@ -84,6 +92,7 @@ function App() {
 
     setProposals((current) => [nextProposal, ...current]);
     setSelectedProposalId(id);
+    showFeedback('Solicitação criada e enviada para aprovação coletiva.');
     navigate('approve-expense');
   };
 
@@ -108,6 +117,7 @@ function App() {
     );
 
     if (!wasApproved && becomesApproved) {
+      showFeedback('Threshold atingido: despesa autorizada e lançada no histórico.');
       setMovements((movementsList) => [
         ...(movementsList.some((movement) => movement.id === `movement-${currentProposal.id}`)
           ? []
@@ -122,7 +132,10 @@ function App() {
             ]),
         ...movementsList,
       ]);
+      return;
     }
+
+    showFeedback(`Aprovação registrada: ${approvals.length}/${currentProposal.threshold}.`);
   };
 
   const rejectProposal = (proposalId: string, memberId: string) => {
@@ -137,11 +150,12 @@ function App() {
           : proposal,
       ),
     );
+    showFeedback('Rejeição registrada na solicitação.');
   };
 
   return (
     <div className="app-shell">
-      <div className={`mobile-overlay ${isMobileMenuOpen ? 'open' : ''}`} onClick={() => setIsMobileMenuOpen(false)} />
+        <button className={`mobile-overlay ${isMobileMenuOpen ? 'open' : ''}`} onClick={() => setIsMobileMenuOpen(false)} aria-label="Fechar menu de navegação" />
       
       <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`} aria-label="Navegação principal">
         <button className="brand-mark brand-button" onClick={() => { navigate('landing'); setIsMobileMenuOpen(false); }}>
@@ -192,7 +206,7 @@ function App() {
         {currentScreen === 'landing' && <Landing onLogin={() => navigate('login')} onRegister={() => navigate('register')} onDashboard={() => navigate('dashboard')} />}
         {currentScreen === 'login' && <Login onLogin={loginUser} onRegister={() => navigate('register')} />}
         {currentScreen === 'register' && <Register onRegister={registerUser} onLogin={() => navigate('login')} />}
-        {currentScreen === 'create-organization' && <CreateOrganization onDone={() => navigate('dashboard')} />}
+        {currentScreen === 'create-organization' && <CreateOrganization onDone={() => { showFeedback('Organização demo criada com regra 3 de 5.'); navigate('dashboard'); }} />}
         {currentScreen === 'dashboard' && <Dashboard stats={stats} movements={movements} onNewExpense={() => navigate('new-expense')} />}
         {currentScreen === 'treasury' && <Treasury proposals={proposals} onApprove={openProposal} />}
         {currentScreen === 'new-expense' && <NewExpense onCreate={createProposal} />}
@@ -202,6 +216,7 @@ function App() {
         {currentScreen === 'contribute' && <Contribute />}
       </main>
 
+      {feedback && <div className="toast-feedback" role="status" aria-live="polite">{feedback}</div>}
       <DemoGuide currentScreen={currentScreen} onNavigate={navigate} onReset={resetDemo} />
     </div>
   );

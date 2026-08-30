@@ -20,7 +20,7 @@ function ProposalCard({ proposal, onApprove }: ProposalCardProps) {
       <p>{proposal.description}</p>
       <strong className="proposal-amount">{money.format(proposal.amount)}</strong>
       <div className="progress-track compact"><div style={{ width: `${Math.min((proposal.approvals.length / proposal.threshold) * 100, 100)}%` }} /></div>
-      <button className="secondary-action full" onClick={onApprove}>Ver aprovação</button>
+      <button className="secondary-action full" onClick={onApprove} aria-label={`Ver aprovação de ${proposal.title}`}>Ver aprovação</button>
     </div>
   );
 }

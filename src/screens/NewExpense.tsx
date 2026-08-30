@@ -39,9 +39,9 @@ function NewExpense({ onCreate }: NewExpenseProps) {
     <section className="content-stack page-enter">
       <PageTitle eyebrow="Nova solicitação" title="Criar despesa" description="O gestor solicita a despesa, mas a movimentação só acontece após o threshold de aprovações." />
       <div className="panel form-panel wide">
-        <label>Fornecedor<input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-        <label>Valor<input value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="numeric" /></label>
-        <label>Justificativa<textarea value={description} onChange={(event) => setDescription(event.target.value)} /></label>
+        <label>Fornecedor<input value={title} onChange={(event) => setTitle(event.target.value)} required /></label>
+        <label>Valor<input value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="numeric" type="number" min="1" required /></label>
+        <label>Justificativa<textarea value={description} onChange={(event) => setDescription(event.target.value)} required /></label>
         {error && <div className="form-error" role="alert">{error}</div>}
         <div className="info-box"><ShieldCheck size={18} /> Esta solicitação será enviada para aprovação 3 de 5 via Squads.</div>
         <button className="primary-action" onClick={submitProposal}>Criar solicitação</button>

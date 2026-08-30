@@ -1064,9 +1064,32 @@ textarea {
   left: 0;
   right: 0;
   bottom: 0;
+  border: 0;
   background: rgba(0, 0, 0, 0.4);
   z-index: 40;
   backdrop-filter: blur(2px);
+}
+
+.toast-feedback {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 14px 16px;
+  border: 1px solid rgba(42, 174, 122, 0.28);
+  border-radius: 18px;
+  color: var(--green-950);
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow);
+  z-index: 10000;
+}
+
+.demo-helper {
+  display: block;
+  margin-top: 10px;
+  color: var(--muted);
+  line-height: 1.4;
 }
 
 .mobile-overlay.open {
@@ -1160,6 +1183,13 @@ textarea {
     bottom: 12px;
     left: 12px;
     width: auto;
+  }
+
+  .toast-feedback {
+    right: 12px;
+    bottom: 88px;
+    left: 12px;
+    max-width: none;
   }
 
   .demo-guide.minimized {

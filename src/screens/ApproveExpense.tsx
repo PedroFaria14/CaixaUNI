@@ -67,10 +67,10 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
                 <div className="approver approver-action" key={member.id}>
                   <div><strong>{member.name}</strong><span>{member.role}</span></div>
                   <div className="mini-actions">
-                    <button className="approve-mini" disabled={approved || status === 'approved'} onClick={() => onApprove(proposal.id, member.id)}>
+                    <button className="approve-mini" disabled={approved || status === 'approved'} onClick={() => onApprove(proposal.id, member.id)} aria-label={`Aprovar solicitação como ${member.name}`}>
                       {approved ? <><Check size={15} /> Aprovou</> : <><Check size={15} /> Aprovar</>}
                     </button>
-                    <button className="reject-mini" disabled={rejected || status === 'approved'} onClick={() => onReject(proposal.id, member.id)}>
+                    <button className="reject-mini" disabled={rejected || status === 'approved'} onClick={() => onReject(proposal.id, member.id)} aria-label={`Rejeitar solicitação como ${member.name}`}>
                       {rejected ? <><X size={15} /> Rejeitou</> : <><X size={15} /> Rejeitar</>}
                     </button>
                   </div>

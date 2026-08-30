@@ -40,9 +40,9 @@ function Register({ onRegister, onLogin }: RegisterProps) {
         <span className="eyebrow">Primeiro acesso</span>
         <h2>Criar conta</h2>
         <p>Cadastre um usuário da organização. Nesta etapa, tudo continua mockado para a demo.</p>
-        <label>Nome<input value={name} onChange={(event) => setName(event.target.value)} /></label>
-        <label>E-mail<input value={email} onChange={(event) => setEmail(event.target.value)} type="email" /></label>
-        <label>Senha<input value={password} onChange={(event) => setPassword(event.target.value)} type="password" /></label>
+        <label>Nome<input value={name} onChange={(event) => setName(event.target.value)} required /></label>
+        <label>E-mail<input value={email} onChange={(event) => setEmail(event.target.value)} type="email" required /></label>
+        <label>Senha<input value={password} onChange={(event) => setPassword(event.target.value)} type="password" minLength={6} required /></label>
         <label>
           Papel inicial
           <select value={role} onChange={(event) => setRole(event.target.value as User['role'])}>
