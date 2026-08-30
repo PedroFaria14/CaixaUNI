@@ -705,6 +705,77 @@ textarea {
 .approval-card {
   display: grid;
   align-content: start;
+  gap: 18px;
+}
+
+.approval-hero {
+  display: grid;
+  gap: 6px;
+  padding: 20px;
+  border: 1px solid rgba(42, 174, 122, 0.22);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top right, rgba(226, 176, 71, 0.18), transparent 32%),
+    #f2fbf6;
+}
+
+.approval-hero strong {
+  color: var(--green-950);
+  font-size: clamp(3rem, 8vw, 5.4rem);
+  line-height: 0.95;
+  letter-spacing: -0.08em;
+}
+
+.approval-hero > span:last-child {
+  color: var(--green-700);
+  font-weight: 900;
+}
+
+.execution-rail {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.execution-node {
+  display: grid;
+  gap: 6px;
+  min-height: 128px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: white;
+}
+
+.execution-node strong {
+  color: var(--green-950);
+}
+
+.execution-node span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.execution-node.done {
+  border-color: rgba(42, 174, 122, 0.34);
+  color: var(--green-700);
+  background: #f0fbf5;
+}
+
+.execution-node.pending {
+  border-color: rgba(237, 139, 56, 0.28);
+  color: var(--orange-500);
+  background: #fff8ef;
+}
+
+.execution-node.locked {
+  color: var(--red-500);
+  background: #fff5f5;
+}
+
+.compact-header {
+  margin-bottom: 14px;
 }
 
 .approval-ok,
@@ -1035,7 +1106,8 @@ textarea {
   .metrics-grid,
   .proposal-grid,
   .member-grid,
-  .web3-steps {
+  .web3-steps,
+  .execution-rail {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -1048,7 +1120,8 @@ textarea {
   .metrics-grid,
   .proposal-grid,
   .member-grid,
-  .web3-steps {
+  .web3-steps,
+  .execution-rail {
     grid-template-columns: 1fr;
   }
 
