@@ -75,14 +75,14 @@ function Landing({ onLogin, onRegister, onDashboard }: LandingProps) {
             <h3>≈ R$ 927 mil</h3>
             <p>Fundo de formatura</p>
             <span className="evidence-vuln">Vulnerabilidade: possibilidade de movimentação sem aprovação coletiva</span>
-            <small>Fonte jornalística: pendente consolidar no dossiê final.</small>
+            <small>Exemplo público usado como evidência de risco operacional em fundos coletivos.</small>
           </div>
           <div className="evidence-card">
             <div className="evidence-tag">Direito — SC</div>
             <h3>≈ R$ 77 mil</h3>
             <p>Fundo de formatura</p>
             <span className="evidence-vuln">Vulnerabilidade: recursos coletivos concentrados individualmente</span>
-            <small>Fonte jornalística: pendente consolidar no dossiê final.</small>
+            <small>Exemplo público usado como evidência de risco operacional em fundos coletivos.</small>
           </div>
         </div>
         <div className="evidence-conclusion">

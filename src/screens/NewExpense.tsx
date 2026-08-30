@@ -11,9 +11,28 @@ function NewExpense({ onCreate }: NewExpenseProps) {
   const [title, setTitle] = useState('Buffet ABC');
   const [amount, setAmount] = useState('12000');
   const [description, setDescription] = useState('Entrada de 30% para reserva da data do evento.');
+  const [error, setError] = useState('');
 
   const submitProposal = () => {
-    onCreate({ title, amount: Number(amount), description });
+    const parsedAmount = Number(amount);
+
+    if (!title.trim()) {
+      setError('Informe o fornecedor da despesa.');
+      return;
+    }
+
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      setError('Informe um valor positivo para a despesa.');
+      return;
+    }
+
+    if (!description.trim()) {
+      setError('Informe a justificativa da solicitação.');
+      return;
+    }
+
+    setError('');
+    onCreate({ title: title.trim(), amount: parsedAmount, description: description.trim() });
   };
 
   return (
@@ -23,6 +42,7 @@ function NewExpense({ onCreate }: NewExpenseProps) {
         <label>Fornecedor<input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
         <label>Valor<input value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="numeric" /></label>
         <label>Justificativa<textarea value={description} onChange={(event) => setDescription(event.target.value)} /></label>
+        {error && <div className="form-error" role="alert">{error}</div>}
         <div className="info-box"><ShieldCheck size={18} /> Esta solicitação será enviada para aprovação 3 de 5 via Squads.</div>
         <button className="primary-action" onClick={submitProposal}>Criar solicitação</button>
       </div>

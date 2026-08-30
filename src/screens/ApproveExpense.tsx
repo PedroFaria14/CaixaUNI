@@ -19,7 +19,7 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
 
   return (
     <section className="content-stack page-enter">
-      <PageTitle eyebrow="Aprovação coletiva" title={`${proposal.title} — ${money.format(proposal.amount)}`} description="Para o usuário, é uma aprovação simples. Por trás, a regra multisig participa da movimentação." />
+      <PageTitle eyebrow="Aprovação coletiva" title={`${proposal.title} — ${money.format(proposal.amount)}`} description="Para o usuário, é uma aprovação simples. Na demo, o fluxo representa a regra multisig que autoriza a movimentação." />
       <div className="approval-layout">
         <div className="panel approval-card">
           <div className="approval-hero">

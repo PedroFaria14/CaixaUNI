@@ -53,10 +53,10 @@ function Web3SetupPanel() {
         </div>
         <div className={connected ? 'web3-step done' : 'web3-step pending'}>
           <strong>Wallet do gestor</strong>
-          <span>{publicKey ? shortenAddress(publicKey.toBase58()) : 'Conecte Phantom ou Solflare para sair do mock.'}</span>
+          <span>{publicKey ? shortenAddress(publicKey.toBase58()) : 'Conecte Phantom ou Solflare para validar a wallet da demo.'}</span>
         </div>
         <div className="web3-step pending">
-          <strong>Multisig planejada</strong>
+          <strong>Multisig demonstrada</strong>
           <span>
             {MULTISIG_THRESHOLD} de {members.length} aprovações via Squads Protocol.
           </span>
@@ -68,7 +68,7 @@ function Web3SetupPanel() {
       </div>
 
       <div className="info-box web3-note">
-        Próximo incremento: criar a multisig real no Squads usando estas {approverKeys.length} chaves de aprovadores em Devnet.
+        Demo honesta: a wallet Solana conecta em Devnet; a execução Squads está representada no fluxo 3 de {approverKeys.length}.
       </div>
     </div>
   );

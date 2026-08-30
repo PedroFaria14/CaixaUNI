@@ -89,7 +89,7 @@ function App() {
 
   const approveProposal = (proposalId: string, memberId: string) => {
     const currentProposal = proposals.find((proposal) => proposal.id === proposalId);
-    if (!currentProposal || currentProposal.approvals.includes(memberId)) return;
+    if (!currentProposal || currentProposal.approvals.length >= currentProposal.threshold || currentProposal.approvals.includes(memberId)) return;
 
     const approvals = [...currentProposal.approvals, memberId];
     const wasApproved = currentProposal.approvals.length >= currentProposal.threshold;
@@ -109,13 +109,17 @@ function App() {
 
     if (!wasApproved && becomesApproved) {
       setMovements((movementsList) => [
-        {
-          id: `movement-${currentProposal.id}`,
-          title: currentProposal.title,
-          value: currentProposal.amount,
-          detail: `✓ ${approvals.length}/${currentProposal.totalApprovers} aprovações`,
-          type: 'expense',
-        },
+        ...(movementsList.some((movement) => movement.id === `movement-${currentProposal.id}`)
+          ? []
+          : [
+              {
+                id: `movement-${currentProposal.id}`,
+                title: currentProposal.title,
+                value: currentProposal.amount,
+                detail: `✓ ${approvals.length}/${currentProposal.totalApprovers} aprovações`,
+                type: 'expense' as const,
+              },
+            ]),
         ...movementsList,
       ]);
     }
@@ -124,7 +128,7 @@ function App() {
   const rejectProposal = (proposalId: string, memberId: string) => {
     setProposals((current) =>
       current.map((proposal) =>
-        proposal.id === proposalId && !proposal.rejectedBy.includes(memberId)
+        proposal.id === proposalId && proposal.approvals.length < proposal.threshold && !proposal.rejectedBy.includes(memberId)
           ? {
               ...proposal,
               rejectedBy: [...proposal.rejectedBy, memberId],
