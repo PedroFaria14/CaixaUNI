@@ -1,4 +1,4 @@
-import { Check, Landmark, Lock, QrCode, ShieldCheck, Sparkles, Users, X } from 'lucide-react';
+import { Check, ClipboardList, Eye, Landmark, Lock, QrCode, ShieldCheck, Sparkles, Users, WalletCards, X } from 'lucide-react';
 
 type LandingProps = {
   onLogin: () => void;
@@ -17,6 +17,10 @@ function Landing({ onLogin, onRegister, onDashboard }: LandingProps) {
             Uma plataforma de tesouraria compartilhada para comissões de formatura e atléticas universitárias,
             onde movimentações importantes exigem múltiplas aprovações antes de acontecer.
           </p>
+          <div className="hero-thesis">
+            <strong>Tese do MVP</strong>
+            <span>Reduzir a dependência de controle individual sobre recursos que pertencem a muitos estudantes.</span>
+          </div>
           <div className="hero-actions">
             <button className="primary-action" onClick={onRegister}>Criar conta</button>
             <button className="secondary-action" onClick={onLogin}>Entrar</button>
@@ -49,10 +53,21 @@ function Landing({ onLogin, onRegister, onDashboard }: LandingProps) {
         </div>
       </section>
 
+      <section className="problem-pattern-section">
+        <div className="pattern-card danger-pattern">
+          <span>Modelo tradicional</span>
+          <strong>Dinheiro coletivo → controle concentrado → prestação de contas depois</strong>
+        </div>
+        <div className="pattern-card safe-pattern">
+          <span>CaixaUni</span>
+          <strong>Dinheiro coletivo → aprovação compartilhada → movimentação autorizada</strong>
+        </div>
+      </section>
+
       <section className="evidence-section">
         <div className="evidence-header">
           <h2>Por que construímos o CaixaUni?</h2>
-          <p>O risco de controle individual sobre recursos coletivos não é hipotético.</p>
+          <p>Casos públicos brasileiros mostram que o risco de controle individual sobre recursos coletivos não é apenas teórico.</p>
         </div>
         <div className="evidence-grid">
           <div className="evidence-card">
@@ -60,16 +75,42 @@ function Landing({ onLogin, onRegister, onDashboard }: LandingProps) {
             <h3>≈ R$ 927 mil</h3>
             <p>Fundo de formatura</p>
             <span className="evidence-vuln">Vulnerabilidade: possibilidade de movimentação sem aprovação coletiva</span>
+            <small>Fonte jornalística: pendente consolidar no dossiê final.</small>
           </div>
           <div className="evidence-card">
             <div className="evidence-tag">Direito — SC</div>
             <h3>≈ R$ 77 mil</h3>
             <p>Fundo de formatura</p>
             <span className="evidence-vuln">Vulnerabilidade: recursos coletivos concentrados individualmente</span>
+            <small>Fonte jornalística: pendente consolidar no dossiê final.</small>
           </div>
         </div>
         <div className="evidence-conclusion">
-          <strong>O padrão estrutural:</strong> Dinheiro de muitas pessoas + Controle operacional de poucas pessoas.
+          <strong>O padrão estrutural:</strong> dinheiro de muitas pessoas + controle operacional de poucas pessoas.
+        </div>
+      </section>
+
+      <section className="comparison-section">
+        <div className="comparison-header">
+          <h2>Por que não basta transparência?</h2>
+          <p>O CaixaUni não quer apenas mostrar o que aconteceu. Quer reduzir o risco antes da movimentação.</p>
+        </div>
+        <div className="comparison-grid">
+          <div className="comparison-card">
+            <ClipboardList size={28} />
+            <h3>Planilha</h3>
+            <p>Registra decisões, mas não impede uma movimentação concentrada.</p>
+          </div>
+          <div className="comparison-card">
+            <Eye size={28} />
+            <h3>Dashboard comum</h3>
+            <p>Mostra saldo e histórico, mas normalmente atua depois do fato.</p>
+          </div>
+          <div className="comparison-card highlighted">
+            <WalletCards size={28} />
+            <h3>CaixaUni + multisig</h3>
+            <p>Faz a regra de aprovação participar da própria autorização da movimentação.</p>
+          </div>
         </div>
       </section>
 

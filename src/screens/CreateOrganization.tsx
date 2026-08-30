@@ -1,4 +1,5 @@
 import PageTitle from '../components/PageTitle';
+import Web3SetupPanel from '../components/Web3SetupPanel';
 import { members } from '../data/mockData';
 
 function CreateOrganization({ onDone }: { onDone: () => void }) {
@@ -19,6 +20,7 @@ function CreateOrganization({ onDone }: { onDone: () => void }) {
           <div className="member-dots">{members.map((member) => <span key={member.id}>{member.name}</span>)}</div>
         </div>
       </div>
+      <Web3SetupPanel />
     </section>
   );
 }
