@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, ChevronsRight, Minimize2 } from 'lucide-react';
+import { Check, ChevronsRight, Minimize2, RotateCcw } from 'lucide-react';
 import type { Screen } from '../types';
 
 type DemoStep = {
@@ -9,21 +9,26 @@ type DemoStep = {
 };
 
 const demoSteps: DemoStep[] = [
-  { screen: 'create-organization', title: 'Criar organização', description: 'Define comissão e regra 3 de 5.' },
-  { screen: 'new-expense', title: 'Criar despesa', description: 'Gestor solicita movimentação.' },
-  { screen: 'approve-expense', title: 'Aprovar', description: 'Responsáveis votam na proposta.' },
-  { screen: 'history', title: 'Histórico', description: 'Despesa aprovada aparece no registro.' },
-  { screen: 'contribute', title: 'Contribuir', description: 'Solana Pay aparece como complemento.' },
+  { screen: 'landing', title: 'Problema', description: 'Mostre dinheiro coletivo com controle concentrado.' },
+  { screen: 'register', title: 'Entrada', description: 'Cadastre um gestor ou aprovador da comissão.' },
+  { screen: 'create-organization', title: 'Governança', description: 'Configure a organização e a regra 3 de 5.' },
+  { screen: 'new-expense', title: 'Solicitação', description: 'Crie uma despesa que não pode ser paga sozinha.' },
+  { screen: 'approve-expense', title: 'Aprovação', description: 'Aprove com três responsáveis até liberar o threshold.' },
+  { screen: 'history', title: 'Histórico', description: 'Comprove que só despesas autorizadas entram no registro.' },
+  { screen: 'contribute', title: 'Arrecadação', description: 'Mostre Solana Pay como complemento para entradas.' },
 ];
 
 type DemoGuideProps = {
   currentScreen: Screen;
   onNavigate: (screen: Screen) => void;
+  onReset: () => void;
 };
 
-function DemoGuide({ currentScreen, onNavigate }: DemoGuideProps) {
+function DemoGuide({ currentScreen, onNavigate, onReset }: DemoGuideProps) {
   const [minimized, setMinimized] = useState(false);
-  const activeIndex = demoSteps.findIndex((step) => step.screen === currentScreen);
+  const activeIndex = Math.max(demoSteps.findIndex((step) => step.screen === currentScreen), 0);
+  const nextStep = demoSteps[Math.min(activeIndex + 1, demoSteps.length - 1)];
+  const isLastStep = activeIndex >= demoSteps.length - 1;
 
   if (minimized) {
     return (
@@ -64,6 +69,15 @@ function DemoGuide({ currentScreen, onNavigate }: DemoGuideProps) {
             </button>
           );
         })}
+      </div>
+
+      <div className="demo-actions">
+        <button className="demo-next" onClick={() => onNavigate(isLastStep ? 'landing' : nextStep.screen)}>
+          {isLastStep ? 'Voltar ao início' : 'Próximo passo'} <ChevronsRight size={16} />
+        </button>
+        <button className="demo-reset" onClick={onReset}>
+          <RotateCcw size={15} /> Reiniciar demo
+        </button>
       </div>
     </aside>
   );

@@ -62,6 +62,14 @@ function App() {
     navigate('create-organization');
   };
 
+  const resetDemo = () => {
+    setProposals(initialProposals);
+    setMovements(initialMovements);
+    setCurrentUser(null);
+    setSelectedProposalId('buffet-abc');
+    navigate('landing');
+  };
+
   const createProposal = (proposal: Pick<Proposal, 'title' | 'amount' | 'description'>) => {
     const id = `${proposal.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`;
     const nextProposal: Proposal = {
@@ -156,8 +164,8 @@ function App() {
           </div>
         )}
         
-        <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
-          <WalletMultiButton style={{ width: '100%', justifyContent: 'center' }} />
+        <div className="wallet-sidebar-action">
+          <WalletMultiButton />
         </div>
       </aside>
 
@@ -167,7 +175,12 @@ function App() {
             <div className="brand-icon">CU</div>
             <strong>CaixaUni</strong>
           </div>
-          <button className="mobile-menu-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          <button
+            className="mobile-menu-toggle"
+            aria-label={isMobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
+            aria-expanded={isMobileMenuOpen}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
             {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </header>
@@ -185,7 +198,7 @@ function App() {
         {currentScreen === 'contribute' && <Contribute />}
       </main>
 
-      <DemoGuide currentScreen={currentScreen} onNavigate={navigate} />
+      <DemoGuide currentScreen={currentScreen} onNavigate={navigate} onReset={resetDemo} />
     </div>
   );
 }

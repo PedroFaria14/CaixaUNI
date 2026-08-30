@@ -137,6 +137,20 @@ textarea:focus-visible {
   color: var(--green-950);
 }
 
+.wallet-sidebar-action {
+  margin-top: auto;
+  padding-top: 20px;
+}
+
+.wallet-sidebar-action .wallet-adapter-button {
+  justify-content: center;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--green-900);
+  font-family: inherit;
+  font-weight: 800;
+}
+
 .nav-list button {
   width: 100%;
   padding: 12px 14px;
@@ -804,8 +818,16 @@ textarea {
 }
 
 .demo-guide.minimized {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   width: auto;
   min-width: 200px;
+  padding: 12px 16px;
+  border: 0;
+  color: white;
+  font-weight: 900;
+  background: var(--green-900);
 }
 
 .demo-guide-header {
@@ -848,13 +870,39 @@ textarea {
 
 .demo-step {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   padding: 8px;
+  border: 0;
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s;
   color: var(--muted);
+  text-align: left;
+  background: transparent;
+}
+
+.demo-step > span {
+  display: grid;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 999px;
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 900;
+  background: #b7c4be;
+}
+
+.demo-step div {
+  display: grid;
+  gap: 2px;
+}
+
+.demo-step small {
+  color: var(--muted);
+  line-height: 1.35;
 }
 
 .demo-step:hover {
@@ -867,8 +915,42 @@ textarea {
   font-weight: 500;
 }
 
+.demo-step.active > span,
+.demo-step.completed > span {
+  background: var(--green-700);
+}
+
 .demo-step.completed {
   color: var(--green-700);
+}
+
+.demo-actions {
+  display: grid;
+  gap: 8px;
+  padding: 0 16px 16px;
+}
+
+.demo-next,
+.demo-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  border-radius: 999px;
+  font-weight: 900;
+}
+
+.demo-next {
+  border: 1px solid var(--green-900);
+  color: white;
+  background: var(--green-900);
+}
+
+.demo-reset {
+  border: 1px solid var(--line);
+  color: var(--green-900);
+  background: white;
 }
 
 .step-icon {
@@ -983,6 +1065,18 @@ textarea {
 
   .threshold-big {
     font-size: 3.9rem;
+  }
+
+  .demo-guide {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    width: auto;
+  }
+
+  .demo-guide.minimized {
+    left: auto;
+    min-width: auto;
   }
 }
 
