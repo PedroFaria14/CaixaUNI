@@ -25,7 +25,7 @@ function Contribute() {
             <CopyCheck size={18} /> {copied ? 'Link copiado' : 'Copiar link de pagamento'}
           </button>
           <small className="demo-helper" role="status" aria-live="polite">
-            {copied ? 'Link demonstrativo copiado para a área de transferência.' : 'Link mockado para apresentar a experiência de arrecadação.'}
+            {copied ? 'Link demonstrativo copiado para a área de transferência.' : 'Link demonstrativo para apresentar a experiência de arrecadação.'}
           </small>
         </div>
         <div className="panel">

@@ -387,13 +387,27 @@ Resultado esperado:
 
 ## Próximas Etapas Recomendadas
 
+### Estado atual do frontend
+
+O frontend está pronto para apresentação como MVP demonstrativo:
+
+- landing page com narrativa do problema e solução;
+- cadastro/login em modo demonstrativo;
+- criação de organização com regra 3 de 5;
+- dashboard financeiro;
+- criação e aprovação de despesas;
+- histórico atualizado apenas quando o threshold é atingido;
+- feedback visual de ações;
+- contribuição com link demonstrativo;
+- conexão de wallet Solana em Devnet.
+
 ### Próxima etapa técnica imediata
 
-Iniciar a modelagem de integração com a blockchain (Squads/Solana).
+Iniciar a integração real com Solana por incrementos seguros.
 
 Objetivo:
 ```text
-Sair do "mock" no processo de aprovação e provar a tese utilizando uma infraestrutura real on-chain.
+Evoluir do fluxo demonstrativo para verificações reais em Devnet, começando por wallet, rede e saldo antes de enviar transações.
 ```
 
 ### Depois disso
@@ -446,7 +460,7 @@ docs: add CaixaUni project overview
 ## Observações Importantes
 
 - O projeto está em estágio de MVP e protótipo funcional.
-- O frontend atual é mockado intencionalmente.
+- O frontend atual usa modo demonstrativo intencionalmente para provar a jornada principal.
 - A prioridade da demo é provar o fluxo `despesa → aprovações → threshold → autorização`.
 - A integração real com Squads/Solana deve vir depois de a experiência principal estar clara.
 - Solana Pay é complementar; Squads é central para a tese.

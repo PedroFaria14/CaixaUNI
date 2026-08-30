@@ -253,17 +253,33 @@ Importante:
 Usar pnpm. Não usar npm.
 ```
 
-## O Que Falta Fazer
+## Estado Atual Do Frontend
 
-As seguintes tarefas **já foram concluídas** para o modo demonstração:
+As seguintes tarefas **já foram concluídas** para a demonstração:
 - criar modo demo guiado para o pitch;
 - salvar estado no navegador com localStorage;
 - melhorar navegação mobile;
 - criar uma seção visual com os casos reais pesquisados na Landing Page;
-- preparar mock visual da integração com Squads/Solana.
+- preparar painel visual da integração com Squads/Solana;
+- conectar wallet Solana em Devnet via wallet adapter;
+- validar formulários principais;
+- mostrar feedback de sucesso nas ações da demo;
+- copiar link demonstrativo de contribuição.
+
+O frontend está pronto para apresentação como MVP demonstrativo.
+
+## O Que Ainda É Demonstrativo
+
+- Login e cadastro ainda não usam backend real.
+- Organizações, propostas e movimentações ainda usam estado local.
+- A regra 3 de 5 funciona no frontend, mas ainda não executa uma multisig real no Squads.
+- Solana Pay está representado por um link demonstrativo.
+
+## O Que Falta Fazer
 
 Próximas tarefas importantes (Integração e Backend):
 
+- ler saldo real da wallet conectada em Devnet;
 - iniciar integração com a SDK do Squads Protocol para criar propostas multisig reais;
 - definir se utilizaremos chamadas RPC diretas do frontend ou se criaremos um backend auxiliar;
 - caso opte por backend, definir a stack (ex: Node/TypeScript) e criar rotas para metadados (nome da comissão, descrições);
