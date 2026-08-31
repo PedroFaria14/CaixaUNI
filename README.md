@@ -20,13 +20,18 @@ CaixaUni é um MVP web para tesourarias universitárias coletivas, como comissõ
 - Persistência local da demo com `localStorage`.
 - Conexão de wallet Solana em Devnet.
 - Consulta de status do RPC Solana no painel Web3.
+- Consulta de saldo real da wallet conectada em Devnet.
+- Link para a wallet conectada no Solana Explorer Devnet.
+- Validação local da configuração Squads 3 de 5 com public keys dos membros.
+- Preparação local da instrução Squads `multisigCreateV2`.
+- Criação real de multisig Squads em Devnet com assinatura pela wallet conectada.
 - Build de produção com Vite.
 
 ## O que ainda é demonstrativo
 
 - Login/cadastro não usam backend real.
 - Organizações, propostas, membros e movimentações usam dados locais.
-- Aprovação 3 de 5 é funcional no frontend, mas ainda não cria uma multisig real no Squads.
+- Aprovação 3 de 5 é funcional no frontend e a multisig Squads pode ser criada em Devnet, mas as aprovações das despesas ainda não viram propostas Squads reais.
 - Solana Pay está representado por um link demonstrativo.
 
 ## Stack
@@ -81,15 +86,15 @@ pnpm preview
 
 ## Próximo incremento técnico
 
-Começar pela integração Solana segura:
+Continuar pela integração Solana segura:
 
-1. Ler saldo real da wallet conectada em Devnet.
-2. Exibir status de rede e assinatura disponível.
-3. Preparar serviço isolado para Squads.
-4. Só depois criar transação real de multisig em Devnet.
+1. Mapear uma despesa do CaixaUni para uma proposta Squads real.
+2. Criar fluxo de aprovação on-chain da proposta.
+3. Exibir status da proposta usando dados lidos da Devnet.
+4. Manter o fluxo demonstrativo como fallback caso a wallet/RPC falhe.
 
 ## Cuidados de apresentação
 
-- Não afirmar que o MVP já executa multisig real no Squads.
+- Não afirmar que as despesas já são aprovadas on-chain no Squads.
 - Não afirmar que blockchain elimina fraude.
 - A mensagem correta é: o CaixaUni reduz a dependência de controle individual e prepara o caminho para autorização coletiva on-chain.
