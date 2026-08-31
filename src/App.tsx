@@ -213,7 +213,7 @@ function App() {
           </button>
         </header>
 
-        {currentScreen === 'landing' && <Landing onLogin={() => navigate('login')} onRegister={() => navigate('register')} onDashboard={() => navigate('dashboard')} />}
+        {currentScreen === 'landing' && <Landing onLogin={() => navigate('login')} onRegister={() => navigate('register')} />}
         {currentScreen === 'login' && <Login onLogin={loginUser} onRegister={() => navigate('register')} />}
         {currentScreen === 'register' && <Register onRegister={registerUser} onLogin={() => navigate('login')} />}
         {currentScreen === 'create-organization' && <CreateOrganization onDone={() => { showFeedback('Organização demo criada com regra 3 de 5.'); navigate('dashboard'); }} />}

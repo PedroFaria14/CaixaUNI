@@ -4,10 +4,9 @@ import LogoMark from '../components/LogoMark';
 type LandingProps = {
   onLogin: () => void;
   onRegister: () => void;
-  onDashboard: () => void;
 };
 
-function Landing({ onLogin, onRegister, onDashboard }: LandingProps) {
+function Landing({ onLogin, onRegister }: LandingProps) {
   return (
     <div className="landing-page page-enter">
       <nav className="home-top-nav" aria-label="Navegação da home">
@@ -20,7 +19,6 @@ function Landing({ onLogin, onRegister, onDashboard }: LandingProps) {
         </div>
         <div className="home-nav-actions">
           <button className="secondary-action" onClick={onLogin}>Entrar</button>
-          <button className="primary-action" onClick={onRegister}>Começar</button>
         </div>
       </nav>
 
@@ -36,8 +34,6 @@ function Landing({ onLogin, onRegister, onDashboard }: LandingProps) {
           </div>
           <div className="hero-actions">
             <button className="primary-action" onClick={onRegister}>Começar demo <ArrowRight size={17} /></button>
-            <button className="secondary-action" onClick={onLogin}>Entrar</button>
-            <button className="secondary-action" onClick={onDashboard}>Ver dashboard</button>
           </div>
         </div>
 

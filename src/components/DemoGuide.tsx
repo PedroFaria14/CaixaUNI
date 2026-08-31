@@ -33,7 +33,7 @@ function DemoGuide({ currentScreen, onNavigate, onReset }: DemoGuideProps) {
   if (minimized) {
     return (
       <button className="demo-guide minimized" onClick={() => setMinimized(false)}>
-        <ChevronsRight size={18} /> Demo
+        <ChevronsRight size={18} /> Guia
       </button>
     );
   }
