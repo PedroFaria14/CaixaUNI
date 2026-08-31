@@ -180,7 +180,7 @@ Solana Pay é complementar.
 
 ## O Que Já Foi Feito No Código
 
-Já existe um frontend funcional e mockado.
+Já existe um frontend funcional, conectado à blockchain (Devnet) e com alguns fluxos auxiliares mockados na UI.
 
 Telas criadas:
 
@@ -191,7 +191,7 @@ Telas criadas:
 - Dashboard
 - Tesouraria
 - Criar despesa
-- Aprovar despesa
+- Aprovar despesa (com integração Squads)
 - Histórico
 - Membros
 - Contribuir
@@ -199,12 +199,13 @@ Telas criadas:
 Fluxos já funcionando:
 
 - criar uma despesa;
-- aprovar com responsáveis;
-- rejeitar com responsáveis;
-- contar aprovações;
-- bloquear antes de atingir 3/5;
-- autorizar quando atinge 3/5;
-- atualizar histórico automaticamente.
+- aprovar com responsáveis na interface;
+- bloquear antes de atingir 3/5 na interface;
+- conectar Phantom wallet e usar RPC;
+- criar multisig real na Squads (Devnet);
+- criar proposta real de despesa na Squads (Devnet);
+- aprovar a proposta na Squads (Devnet);
+- executar a proposta na Squads (Devnet).
 
 ## Estado Atual Do Projeto
 
@@ -216,20 +217,20 @@ Tecnologias usadas:
 - pnpm
 - CSS puro
 - lucide-react
+- Solana Wallet Adapter
+- SDK do Squads Protocol (`@sqds/multisig`)
 
 O projeto ainda não tem:
 
-- backend;
-- banco de dados;
-- login real;
-- integração real com Squads;
+- backend e banco de dados reais;
+- login real (funciona via localStorage para a demo da interface);
 - integração real com Solana Pay.
 
-Tudo isso pode entrar depois.
+Tudo isso pode entrar depois, o foco do hackathon foi provar a viabilidade da aprovação multi-assinatura (multisig) on-chain de forma amigável.
 
 ## Como Rodar O Projeto
 
-Instalar dependências:
+Instalar dependências com pnpm:
 
 ```bash
 pnpm install
@@ -250,7 +251,7 @@ pnpm build
 Importante:
 
 ```text
-Usar pnpm. Não usar npm.
+Usar pnpm. Não usar npm ou yarn.
 ```
 
 ## Estado Atual Do Frontend
@@ -258,32 +259,30 @@ Usar pnpm. Não usar npm.
 As seguintes tarefas **já foram concluídas** para a demonstração:
 - criar modo demo guiado para o pitch;
 - salvar estado no navegador com localStorage;
-- melhorar navegação mobile;
-- criar uma seção visual com os casos reais pesquisados na Landing Page;
-- preparar painel visual da integração com Squads/Solana;
+- criar multisig on-chain, propostas, aprovações e execuções usando Squads Protocol em Devnet;
 - conectar wallet Solana em Devnet via wallet adapter;
-- validar formulários principais;
-- mostrar feedback de sucesso nas ações da demo;
-- copiar link demonstrativo de contribuição.
+- leitura de saldo real em SOL;
+- links para o Solana Explorer;
+- botão de "Reiniciar demo" que limpa todo o cache e o estado;
+- tradução de erros comuns (RPC offline, usuário não autorizado, etc).
 
-O frontend está pronto para apresentação como MVP demonstrativo.
+O frontend está pronto para apresentação técnica e pitch.
 
 ## O Que Ainda É Demonstrativo
 
 - Login e cadastro ainda não usam backend real.
-- Organizações, propostas e movimentações ainda usam estado local.
-- A regra 3 de 5 funciona no frontend, mas ainda não executa uma multisig real no Squads.
+- Organizações, propostas do dashboard e movimentações ainda usam estado local.
+- **Importante:** A regra 3 de 5 é cobrada pela interface visual, mas a multisig que criamos no Squads on-chain usa uma configuração 1/5 de propósito. Por quê? Porque no palco, precisar de 3 celulares/wallets diferentes confirmando transações na hora da apresentação geraria muito risco. Portanto, o fluxo on-chain funciona do início ao fim usando apenas a wallet do apresentador (1/5).
 - Solana Pay está representado por um link demonstrativo.
 
 ## O Que Falta Fazer
 
-Próximas tarefas importantes (Integração e Backend):
+Próximas tarefas (pós-MVP / Visão de Futuro):
 
-- ler saldo real da wallet conectada em Devnet;
-- iniciar integração com a SDK do Squads Protocol para criar propostas multisig reais;
-- definir se utilizaremos chamadas RPC diretas do frontend ou se criaremos um backend auxiliar;
-- caso opte por backend, definir a stack (ex: Node/TypeScript) e criar rotas para metadados (nome da comissão, descrições);
-- se houver tempo, desenvolver a parte de contribuições via Solana Pay.
+- criar um backend real (Node/TypeScript) para guardar os nomes das comissões, perfis e despesas;
+- integrar o estado da multisig on-chain (3/5 de verdade) com o banco de dados;
+- desenvolver a parte de arrecadação via Solana Pay real;
+- lançar na Mainnet.
 
 ## O Que Falar No Pitch
 

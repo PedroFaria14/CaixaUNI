@@ -101,11 +101,17 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Falha desconhecida ao criar proposta Squads.';
       const normalizedMessage = message.toLowerCase();
-      const friendlyMessage = normalizedMessage.includes('rejected')
-        ? 'Assinatura cancelada na wallet.'
-        : normalizedMessage.includes('unauthorized') || normalizedMessage.includes('permission')
-          ? 'A wallet conectada não tem permissão de membro para criar proposta nesta multisig. Recrie a multisig com a wallet conectada.'
-          : message;
+      
+      let friendlyMessage = message;
+      if (normalizedMessage.includes('rejected')) {
+        friendlyMessage = 'Assinatura cancelada na wallet.';
+      } else if (normalizedMessage.includes('unauthorized') || normalizedMessage.includes('permission')) {
+        friendlyMessage = 'A wallet conectada não tem permissão de membro nesta multisig.';
+      } else if (normalizedMessage.includes('already created') || normalizedMessage.includes('duplicate')) {
+        friendlyMessage = 'Esta proposta já foi criada na Squads.';
+      } else if (normalizedMessage.includes('rpc') || normalizedMessage.includes('fetch')) {
+        friendlyMessage = 'A rede (RPC) está temporariamente indisponível. Tente novamente.';
+      }
 
       setSquadsError((current) => ({ ...current, [proposal.id]: friendlyMessage }));
       setSquadsStatus((current) => ({ ...current, [proposal.id]: 'error' }));
@@ -156,13 +162,19 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Falha desconhecida ao aprovar proposta Squads.';
       const normalizedMessage = message.toLowerCase();
-      const friendlyMessage = normalizedMessage.includes('rejected')
-        ? 'Assinatura cancelada na wallet.'
-        : normalizedMessage.includes('already') || normalizedMessage.includes('duplicate')
-          ? 'Esta wallet já aprovou a proposta Squads.'
-          : normalizedMessage.includes('unauthorized') || normalizedMessage.includes('permission')
-            ? 'A wallet conectada não tem permissão de voto nesta multisig.'
-            : message;
+      
+      let friendlyMessage = message;
+      if (normalizedMessage.includes('rejected')) {
+        friendlyMessage = 'Assinatura cancelada na wallet.';
+      } else if (normalizedMessage.includes('already') || normalizedMessage.includes('duplicate')) {
+        friendlyMessage = 'Esta proposta já foi aprovada por esta wallet.';
+      } else if (normalizedMessage.includes('unauthorized') || normalizedMessage.includes('permission')) {
+        friendlyMessage = 'A wallet conectada não tem permissão de membro nesta multisig.';
+      } else if (normalizedMessage.includes('executed') || normalizedMessage.includes('closed')) {
+        friendlyMessage = 'Esta proposta já foi executada ou fechada.';
+      } else if (normalizedMessage.includes('rpc') || normalizedMessage.includes('fetch')) {
+        friendlyMessage = 'A rede (RPC) está temporariamente indisponível. Tente novamente.';
+      }
 
       setSquadsApprovalError((current) => ({ ...current, [proposal.id]: friendlyMessage }));
       setSquadsApprovalStatus((current) => ({ ...current, [proposal.id]: 'error' }));
@@ -249,15 +261,19 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Falha desconhecida ao executar proposta Squads.';
       const normalizedMessage = message.toLowerCase();
-      const friendlyMessage = normalizedMessage.includes('rejected')
-        ? 'Assinatura cancelada na wallet.'
-        : normalizedMessage.includes('threshold') || normalizedMessage.includes('approved')
-          ? 'A proposta ainda não está aprovada para execução na Squads.'
-          : normalizedMessage.includes('executed') || normalizedMessage.includes('stale')
-            ? 'Esta proposta Squads já foi executada ou não pode mais ser executada.'
-            : normalizedMessage.includes('unauthorized') || normalizedMessage.includes('permission')
-              ? 'A wallet conectada não tem permissão para executar esta proposta.'
-              : message;
+      
+      let friendlyMessage = message;
+      if (normalizedMessage.includes('rejected')) {
+        friendlyMessage = 'Assinatura cancelada na wallet.';
+      } else if (normalizedMessage.includes('threshold') || normalizedMessage.includes('approved')) {
+        friendlyMessage = 'A proposta ainda não atingiu o threshold para execução.';
+      } else if (normalizedMessage.includes('executed') || normalizedMessage.includes('stale')) {
+        friendlyMessage = 'Esta proposta já foi executada.';
+      } else if (normalizedMessage.includes('unauthorized') || normalizedMessage.includes('permission')) {
+        friendlyMessage = 'A wallet conectada não tem permissão nesta multisig.';
+      } else if (normalizedMessage.includes('rpc') || normalizedMessage.includes('fetch')) {
+        friendlyMessage = 'A rede (RPC) está temporariamente indisponível. Tente novamente.';
+      }
 
       setSquadsExecutionError((current) => ({ ...current, [proposal.id]: friendlyMessage }));
       setSquadsExecutionStatus((current) => ({ ...current, [proposal.id]: 'error' }));

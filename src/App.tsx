@@ -75,7 +75,16 @@ function App() {
     setMovements(initialMovements);
     setCurrentUser(null);
     setSelectedProposalId('buffet-abc');
+    
+    // Limpar estados do Squads do localStorage
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('caixauni_squads')) {
+        localStorage.removeItem(key);
+      }
+    });
+
     navigate('landing');
+    window.location.reload();
   };
 
   const createProposal = (proposal: Pick<Proposal, 'title' | 'amount' | 'description'>) => {
