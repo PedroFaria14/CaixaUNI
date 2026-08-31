@@ -66,6 +66,19 @@ export type SquadsApprovalState = {
   createdAt: string;
 };
 
+export type SquadsProposalChainStatus = {
+  proposalId: string;
+  proposalPda: string;
+  status: string;
+  transactionIndex: string;
+  threshold: number;
+  approvals: string[];
+  rejections: string[];
+  cancellations: string[];
+  readyToExecute: boolean;
+  updatedAt: string;
+};
+
 export type Movement = {
   id: string;
   title: string;

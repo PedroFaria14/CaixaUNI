@@ -1,6 +1,6 @@
 import { Keypair, PublicKey, Transaction, TransactionInstruction, TransactionMessage, type Connection } from '@solana/web3.js';
 import { accounts, getMultisigPda, getProgramConfigPda, getProposalPda, getTransactionPda, getVaultPda, instructions, types } from '@sqds/multisig';
-import type { Member, Proposal } from '../types';
+import type { Member, Proposal, SquadsProposalChainStatus } from '../types';
 import { MULTISIG_THRESHOLD } from './solana';
 
 const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
@@ -264,4 +264,34 @@ export async function createSquadsProposalApproveTransaction(
   const transaction = new Transaction({ feePayer: member, blockhash, lastValidBlockHeight }).add(approveInstruction);
 
   return { transaction, blockhash, lastValidBlockHeight };
+}
+
+export async function getSquadsProposalChainStatus(
+  connection: Connection,
+  proposalId: string,
+  multisigAddress: string,
+  proposalAddress: string,
+): Promise<SquadsProposalChainStatus> {
+  const multisigPda = new PublicKey(multisigAddress);
+  const proposalPda = new PublicKey(proposalAddress);
+  const [multisigAccount, proposalAccount] = await Promise.all([
+    accounts.Multisig.fromAccountAddress(connection, multisigPda, 'confirmed'),
+    accounts.Proposal.fromAccountAddress(connection, proposalPda, 'confirmed'),
+  ]);
+  const prettyProposal = proposalAccount.pretty();
+  const status = typeof prettyProposal.status === 'string' ? prettyProposal.status : proposalAccount.status.__kind;
+  const approvals = proposalAccount.approved.map((key) => key.toBase58());
+
+  return {
+    proposalId,
+    proposalPda: proposalPda.toBase58(),
+    status,
+    transactionIndex: proposalAccount.transactionIndex.toString(),
+    threshold: multisigAccount.threshold,
+    approvals,
+    rejections: proposalAccount.rejected.map((key) => key.toBase58()),
+    cancellations: proposalAccount.cancelled.map((key) => key.toBase58()),
+    readyToExecute: status === 'Approved' || approvals.length >= multisigAccount.threshold,
+    updatedAt: new Date().toISOString(),
+  };
 }
