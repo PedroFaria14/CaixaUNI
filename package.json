@@ -22,5 +22,9 @@
     "typescript": "latest",
     "vite": "latest",
     "vite-plugin-node-polyfills": "^0.28.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5"
   }
 }
