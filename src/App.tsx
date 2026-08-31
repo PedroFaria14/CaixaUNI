@@ -13,6 +13,7 @@ import NewExpense from './screens/NewExpense';
 import Register from './screens/Register';
 import Treasury from './screens/Treasury';
 import DemoGuide from './components/DemoGuide';
+import LogoMark from './components/LogoMark';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import type { Movement, Proposal, Screen, User } from './types';
@@ -168,7 +169,7 @@ function App() {
       
       <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`} aria-label="Navegação principal">
         <button className="brand-mark brand-button" onClick={() => { navigate('landing'); setIsMobileMenuOpen(false); }}>
-          <div className="brand-icon">CU</div>
+          <LogoMark />
           <div>
             <strong>CaixaUni</strong>
             <span>Decisões coletivas</span>
@@ -199,7 +200,7 @@ function App() {
       <main className="main-content">
         <header className="mobile-header">
           <div className="brand-mark compact">
-            <div className="brand-icon">CU</div>
+            <LogoMark compact />
             <strong>CaixaUni</strong>
           </div>
           <button
