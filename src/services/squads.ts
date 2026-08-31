@@ -147,13 +147,6 @@ export async function createSquadsMultisigTransaction(
   );
   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
   const transaction = new Transaction({ feePayer: creator, blockhash, lastValidBlockHeight }).add(instruction);
-  transaction.partialSign(createKeypair);
-
-  const simulation = await connection.simulateTransaction(transaction, [createKeypair]);
-
-  if (simulation.value.err) {
-    throw new Error(`Simulação Squads falhou: ${JSON.stringify(simulation.value.err)}`);
-  }
 
   return {
     transaction,

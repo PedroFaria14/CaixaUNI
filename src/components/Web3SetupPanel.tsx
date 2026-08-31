@@ -15,6 +15,10 @@ import { createSquadsMultisigPlan, createSquadsMultisigTransaction, getSquadsMem
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import type { SquadsMultisigState } from '../types';
 
+function hasTransactionSignature(transaction: { signatures: { publicKey: { toBase58: () => string }; signature: Buffer | null }[] }, address: string) {
+  return transaction.signatures.some((item) => item.publicKey.toBase58() === address && item.signature);
+}
+
 function Web3SetupPanel() {
   const { connection } = useConnection();
   const { connected, publicKey, signTransaction } = useWallet();
@@ -140,6 +144,21 @@ function Web3SetupPanel() {
       );
       const signedTransaction = await signTransaction(transaction);
       signedTransaction.partialSign(createKeypair);
+      const hasWalletSignature = hasTransactionSignature(signedTransaction, walletAddress);
+      const hasCreateKeySignature = hasTransactionSignature(signedTransaction, createKeypair.publicKey.toBase58());
+
+      if (!hasWalletSignature || !hasCreateKeySignature) {
+        throw new Error(
+          `Assinatura incompleta: ${!hasWalletSignature ? 'wallet ausente' : ''}${!hasWalletSignature && !hasCreateKeySignature ? ' e ' : ''}${!hasCreateKeySignature ? 'createKey ausente' : ''}.`,
+        );
+      }
+
+      const simulation = await connection.simulateTransaction(signedTransaction);
+
+      if (simulation.value.err) {
+        throw new Error(`Simulação Squads falhou: ${JSON.stringify(simulation.value.err)}`);
+      }
+
       const signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
         preflightCommitment: 'confirmed',
         skipPreflight: false,
@@ -165,6 +184,10 @@ function Web3SetupPanel() {
 
       if (normalizedMessage.includes('user rejected') || normalizedMessage.includes('rejected')) {
         setCreateError('Assinatura cancelada na wallet.');
+      } else if (normalizedMessage.includes('wallet ausente')) {
+        setCreateError('A wallet não assinou a transação. Desconecte, conecte novamente e confirme pela Phantom.');
+      } else if (normalizedMessage.includes('createkey ausente')) {
+        setCreateError('A assinatura temporária da criação da multisig não foi aplicada. Recarregue a página e tente novamente.');
       } else if (normalizedMessage.includes('signature') || normalizedMessage.includes('!signature')) {
         setCreateError('A transação não ficou com todas as assinaturas exigidas. Desconecte a wallet, conecte novamente e tente outra vez.');
       } else {
