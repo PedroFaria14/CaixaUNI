@@ -76,6 +76,61 @@ function Landing({ onLogin, onRegister, onDashboard }: LandingProps) {
         </div>
       </section>
 
+      <section className="control-problem-section" aria-labelledby="control-problem-title">
+        <div className="problem-section-heading">
+          <span className="eyebrow"><Lock size={16} /> Sobre o problema</span>
+          <h2 id="control-problem-title">Dinheiro de muitos, controle de poucos.</h2>
+          <p>O risco central não é falta de planilha. É permitir que recursos coletivos dependam da decisão operacional de uma única pessoa.</p>
+        </div>
+
+        <div className="control-contrast-grid">
+          <div className="control-path old-path">
+            <span className="path-label">Antes</span>
+            <h3>Dinheiro na mão de um só</h3>
+            <div className="path-steps" aria-label="Fluxo tradicional concentrado">
+              <span>Alunos depositam</span>
+              <i>↓</i>
+              <span>1 responsável controla</span>
+              <i>↓</i>
+              <span>Movimentação acontece</span>
+              <i>↓</i>
+              <strong>Prestação de contas depois</strong>
+            </div>
+          </div>
+
+          <div className="control-path new-path">
+            <span className="path-label">CaixaUni</span>
+            <h3>Decisão 3/5 on-chain</h3>
+            <div className="path-steps" aria-label="Fluxo CaixaUni com governança coletiva">
+              <span>Despesa é proposta</span>
+              <i>↓</i>
+              <span>5 responsáveis votam</span>
+              <i>↓</i>
+              <span>3 aprovações mínimas</span>
+              <i>↓</i>
+              <strong>Execução só com threshold</strong>
+            </div>
+          </div>
+        </div>
+
+        <div className="evidence-strip" aria-label="Evidências documentais do problema">
+          <div className="evidence-mini-card">
+            <span>Medicina USP</span>
+            <strong>~R$ 927 mil</strong>
+            <small>Fundo de formatura em caso público documentado.</small>
+          </div>
+          <div className="evidence-mini-card">
+            <span>Direito SC</span>
+            <strong>~R$ 77 mil</strong>
+            <small>Recursos de formatura concentrados em uma conta individual.</small>
+          </div>
+          <div className="problem-thesis-card">
+            <ShieldCheck size={20} />
+            <strong>Dinheiro coletivo. Decisões coletivas.</strong>
+          </div>
+        </div>
+      </section>
+
       <section className="home-flow-section" aria-label="Como funciona o CaixaUni">
         <div className="home-flow-card">
           <div className="home-flow-icon"><QrCode size={22} /></div>
