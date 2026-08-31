@@ -59,6 +59,13 @@ export type SquadsProposalState = {
   createdAt: string;
 };
 
+export type SquadsApprovalState = {
+  proposalId: string;
+  member: string;
+  signature: string;
+  createdAt: string;
+};
+
 export type Movement = {
   id: string;
   title: string;

@@ -40,6 +40,12 @@ export type SquadsProposalTransaction = {
   lastValidBlockHeight: number;
 };
 
+export type SquadsApprovalTransaction = {
+  transaction: Transaction;
+  blockhash: string;
+  lastValidBlockHeight: number;
+};
+
 async function getSquadsTreasury(connection: Connection) {
   const programConfigPda = getProgramConfigPda({})[0];
   const programConfig = await accounts.ProgramConfig.fromAccountAddress(connection, programConfigPda, 'confirmed');
@@ -237,4 +243,25 @@ export async function createSquadsProposalTransaction(
     blockhash,
     lastValidBlockHeight,
   };
+}
+
+export async function createSquadsProposalApproveTransaction(
+  connection: Connection,
+  memberAddress: string,
+  multisigAddress: string,
+  transactionIndex: string,
+): Promise<SquadsApprovalTransaction> {
+  const member = new PublicKey(memberAddress);
+  const multisigPda = new PublicKey(multisigAddress);
+  const index = BigInt(transactionIndex);
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+  const approveInstruction = instructions.proposalApprove({
+    multisigPda,
+    transactionIndex: index,
+    member,
+    memo: 'CaixaUni approval vote',
+  });
+  const transaction = new Transaction({ feePayer: member, blockhash, lastValidBlockHeight }).add(approveInstruction);
+
+  return { transaction, blockhash, lastValidBlockHeight };
 }

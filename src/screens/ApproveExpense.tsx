@@ -5,8 +5,8 @@ import PageTitle from '../components/PageTitle';
 import { members } from '../data/mockData';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { getExplorerTxUrl, shortenAddress } from '../services/solana';
-import { createSquadsProposalTransaction } from '../services/squads';
-import type { Proposal, SquadsMultisigState, SquadsProposalState } from '../types';
+import { createSquadsProposalApproveTransaction, createSquadsProposalTransaction } from '../services/squads';
+import type { Proposal, SquadsApprovalState, SquadsMultisigState, SquadsProposalState } from '../types';
 import { money } from '../utils/formatters';
 import { getProposalStatus } from '../utils/proposalStatus';
 
@@ -21,8 +21,11 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
   const { publicKey, signTransaction } = useWallet();
   const [storedMultisig] = useLocalStorage<SquadsMultisigState | null>('caixauni_squadsMultisig', null);
   const [squadsProposals, setSquadsProposals] = useLocalStorage<SquadsProposalState[]>('caixauni_squadsProposals', []);
+  const [squadsApprovals, setSquadsApprovals] = useLocalStorage<SquadsApprovalState[]>('caixauni_squadsApprovals', []);
   const [squadsStatus, setSquadsStatus] = useLocalStorage<Record<string, 'idle' | 'signing' | 'success' | 'error'>>('caixauni_squadsProposalStatus', {});
   const [squadsError, setSquadsError] = useLocalStorage<Record<string, string>>('caixauni_squadsProposalError', {});
+  const [squadsApprovalStatus, setSquadsApprovalStatus] = useLocalStorage<Record<string, 'idle' | 'signing' | 'success' | 'error'>>('caixauni_squadsApprovalStatus', {});
+  const [squadsApprovalError, setSquadsApprovalError] = useLocalStorage<Record<string, string>>('caixauni_squadsApprovalError', {});
   const status = getProposalStatus(proposal);
   const statusLabel = status === 'approved' ? 'Autorizada' : status === 'blocked' ? 'Bloqueada' : 'Aguardando aprovações';
   const missingApprovals = Math.max(proposal.threshold - proposal.approvals.length, 0);
@@ -31,6 +34,9 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
   const squadsProposal = squadsProposals.find((item) => item.proposalId === proposal.id);
   const currentSquadsStatus = squadsStatus[proposal.id] ?? 'idle';
   const currentSquadsError = squadsError[proposal.id] ?? '';
+  const squadsApproval = squadsApprovals.find((item) => item.proposalId === proposal.id && item.member === walletAddress);
+  const currentSquadsApprovalStatus = squadsApprovalStatus[proposal.id] ?? 'idle';
+  const currentSquadsApprovalError = squadsApprovalError[proposal.id] ?? '';
 
   const createSquadsProposal = async () => {
     if (!storedMultisig) {
@@ -94,6 +100,63 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
     }
   };
 
+  const approveSquadsProposal = async () => {
+    if (!storedMultisig || !squadsProposal) {
+      setSquadsApprovalError((current) => ({ ...current, [proposal.id]: 'Crie a proposta Squads antes de aprovar on-chain.' }));
+      setSquadsApprovalStatus((current) => ({ ...current, [proposal.id]: 'error' }));
+      return;
+    }
+
+    if (!walletAddress || !signTransaction) {
+      setSquadsApprovalError((current) => ({ ...current, [proposal.id]: 'Conecte uma wallet com suporte a assinatura de transação.' }));
+      setSquadsApprovalStatus((current) => ({ ...current, [proposal.id]: 'error' }));
+      return;
+    }
+
+    if (squadsApproval) {
+      setSquadsApprovalError((current) => ({ ...current, [proposal.id]: 'Esta wallet já aprovou a proposta Squads.' }));
+      setSquadsApprovalStatus((current) => ({ ...current, [proposal.id]: 'error' }));
+      return;
+    }
+
+    setSquadsApprovalStatus((current) => ({ ...current, [proposal.id]: 'signing' }));
+    setSquadsApprovalError((current) => ({ ...current, [proposal.id]: '' }));
+
+    try {
+      const { transaction, blockhash, lastValidBlockHeight } = await createSquadsProposalApproveTransaction(
+        connection,
+        walletAddress,
+        storedMultisig.multisigPda,
+        squadsProposal.transactionIndex,
+      );
+      const signedTransaction = await signTransaction(transaction);
+      const signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
+        preflightCommitment: 'confirmed',
+        skipPreflight: false,
+      });
+
+      await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, 'confirmed');
+      setSquadsApprovals((current) => [
+        ...current.filter((item) => !(item.proposalId === proposal.id && item.member === walletAddress)),
+        { proposalId: proposal.id, member: walletAddress, signature, createdAt: new Date().toISOString() },
+      ]);
+      setSquadsApprovalStatus((current) => ({ ...current, [proposal.id]: 'success' }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Falha desconhecida ao aprovar proposta Squads.';
+      const normalizedMessage = message.toLowerCase();
+      const friendlyMessage = normalizedMessage.includes('rejected')
+        ? 'Assinatura cancelada na wallet.'
+        : normalizedMessage.includes('already') || normalizedMessage.includes('duplicate')
+          ? 'Esta wallet já aprovou a proposta Squads.'
+          : normalizedMessage.includes('unauthorized') || normalizedMessage.includes('permission')
+            ? 'A wallet conectada não tem permissão de voto nesta multisig.'
+            : message;
+
+      setSquadsApprovalError((current) => ({ ...current, [proposal.id]: friendlyMessage }));
+      setSquadsApprovalStatus((current) => ({ ...current, [proposal.id]: 'error' }));
+    }
+  };
+
   return (
     <section className="content-stack page-enter">
       <PageTitle eyebrow="Aprovação coletiva" title={`${proposal.title} — ${money.format(proposal.amount)}`} description="Para o usuário, é uma aprovação simples. Na demo, o fluxo representa a regra multisig que autoriza a movimentação." />
@@ -151,6 +214,17 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
             <button className="primary-action" onClick={() => void createSquadsProposal()} disabled={currentSquadsStatus === 'signing' || Boolean(squadsProposal)}>
               {currentSquadsStatus === 'signing' ? 'Aguardando assinatura...' : squadsProposal ? 'Proposta Squads criada' : 'Criar proposta Squads'}
             </button>
+            {squadsProposal && (
+              <>
+                {squadsApproval && (
+                  <a href={getExplorerTxUrl(squadsApproval.signature)} target="_blank" rel="noreferrer">Abrir aprovação no Solana Explorer</a>
+                )}
+                {currentSquadsApprovalError && <div className="form-error" role="alert">{currentSquadsApprovalError}</div>}
+                <button className="secondary-action" onClick={() => void approveSquadsProposal()} disabled={currentSquadsApprovalStatus === 'signing' || Boolean(squadsApproval)}>
+                  {currentSquadsApprovalStatus === 'signing' ? 'Aguardando assinatura...' : squadsApproval ? 'Aprovada na Squads' : 'Aprovar na Squads'}
+                </button>
+              </>
+            )}
           </div>
         </div>
         <div className="panel">
