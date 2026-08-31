@@ -127,13 +127,14 @@ function Web3SetupPanel() {
     setCreateSignature('');
 
     try {
-      const { transaction, plan, blockhash, lastValidBlockHeight } = await createSquadsMultisigTransaction(
+      const { transaction, createKeypair, plan, blockhash, lastValidBlockHeight } = await createSquadsMultisigTransaction(
         connection,
         walletAddress,
         members,
         MULTISIG_THRESHOLD,
       );
       const signedTransaction = await signTransaction(transaction);
+      signedTransaction.partialSign(createKeypair);
       const signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
         preflightCommitment: 'confirmed',
         skipPreflight: false,
@@ -151,7 +152,7 @@ function Web3SetupPanel() {
       if (normalizedMessage.includes('user rejected') || normalizedMessage.includes('rejected')) {
         setCreateError('Assinatura cancelada na wallet.');
       } else if (normalizedMessage.includes('signature') || normalizedMessage.includes('!signature')) {
-        setCreateError('A wallet não retornou uma assinatura válida para a transação. Tente desconectar e conectar novamente.');
+        setCreateError('A transação não ficou com todas as assinaturas exigidas. Desconecte a wallet, conecte novamente e tente outra vez.');
       } else {
         setCreateError(message);
       }
