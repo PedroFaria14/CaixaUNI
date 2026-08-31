@@ -11,7 +11,9 @@ import {
   SOLANA_NETWORK_LABEL,
   validateSquadsConfiguration,
 } from '../services/solana';
-import { createSquadsMultisigPlan, createSquadsMultisigTransaction, type SquadsCreatePlan } from '../services/squads';
+import { createSquadsMultisigPlan, createSquadsMultisigTransaction, getSquadsMembersWithCreator, type SquadsCreatePlan } from '../services/squads';
+import { useLocalStorage } from '../hooks/useLocalStorage';
+import type { SquadsMultisigState } from '../types';
 
 function Web3SetupPanel() {
   const { connection } = useConnection();
@@ -26,6 +28,7 @@ function Web3SetupPanel() {
   const [createStatus, setCreateStatus] = useState<'idle' | 'signing' | 'success' | 'error'>('idle');
   const [createError, setCreateError] = useState('');
   const [createSignature, setCreateSignature] = useState('');
+  const [storedMultisig, setStoredMultisig] = useLocalStorage<SquadsMultisigState | null>('caixauni_squadsMultisig', null);
 
   useEffect(() => {
     let isMounted = true;
@@ -74,7 +77,9 @@ function Web3SetupPanel() {
   const squadsValidation = useMemo(() => validateSquadsConfiguration(members, MULTISIG_THRESHOLD), []);
   const walletAddress = publicKey?.toBase58();
   const explorerUrl = walletAddress ? getExplorerAddressUrl(walletAddress) : '';
-  const transactionExplorerUrl = createSignature ? getExplorerTxUrl(createSignature) : '';
+  const confirmedSignature = createSignature || storedMultisig?.createSignature || '';
+  const confirmedMultisigPda = squadsPlan?.multisigPda || storedMultisig?.multisigPda || '';
+  const transactionExplorerUrl = confirmedSignature ? getExplorerTxUrl(confirmedSignature) : '';
 
   const prepareSquadsPlan = async () => {
     if (!walletAddress) {
@@ -93,7 +98,7 @@ function Web3SetupPanel() {
     setSquadsPlanError('');
 
     try {
-      setSquadsPlan(await createSquadsMultisigPlan(connection, walletAddress, members, MULTISIG_THRESHOLD));
+      setSquadsPlan(await createSquadsMultisigPlan(connection, walletAddress, getSquadsMembersWithCreator(walletAddress, members), MULTISIG_THRESHOLD));
       setSquadsPlanStatus('success');
       setSquadsPlanError('');
     } catch {
@@ -130,7 +135,7 @@ function Web3SetupPanel() {
       const { transaction, createKeypair, plan, blockhash, lastValidBlockHeight } = await createSquadsMultisigTransaction(
         connection,
         walletAddress,
-        members,
+        getSquadsMembersWithCreator(walletAddress, members),
         MULTISIG_THRESHOLD,
       );
       const signedTransaction = await signTransaction(transaction);
@@ -143,6 +148,15 @@ function Web3SetupPanel() {
       await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, 'confirmed');
       setSquadsPlan(plan);
       setCreateSignature(signature);
+      setStoredMultisig({
+        status: 'created',
+        multisigPda: plan.multisigPda,
+        createSignature: signature,
+        creator: walletAddress,
+        threshold: plan.threshold,
+        members: plan.members,
+        createdAt: new Date().toISOString(),
+      });
       setCreateStatus('success');
       void loadBalance();
     } catch (error) {
@@ -235,11 +249,15 @@ function Web3SetupPanel() {
         </div>
       )}
 
-      {createSignature && (
+      {confirmedSignature && (
         <div className="squads-plan success" aria-label="Transação Squads confirmada na Devnet">
           <div>
+            <span>Multisig criada na Devnet</span>
+            <code>{confirmedMultisigPda}</code>
+          </div>
+          <div>
             <span>Transação confirmada</span>
-            <code>{createSignature}</code>
+            <code>{confirmedSignature}</code>
           </div>
           <a href={transactionExplorerUrl} target="_blank" rel="noreferrer">Abrir transação no Solana Explorer</a>
         </div>
@@ -261,7 +279,7 @@ function Web3SetupPanel() {
       </div>
 
       <div className="info-box web3-note">
-        Demo honesta: wallet, RPC e saldo são consultados na Devnet; a execução Squads ainda está representada no fluxo {MULTISIG_THRESHOLD} de {approverKeys.length}.
+        Demo honesta: wallet, RPC e saldo são consultados na Devnet; a multisig inclui a wallet conectada como membro assinante no fluxo {MULTISIG_THRESHOLD} de {approverKeys.length}.
       </div>
     </div>
   );

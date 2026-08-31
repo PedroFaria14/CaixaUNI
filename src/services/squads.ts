@@ -1,7 +1,9 @@
-import { Keypair, PublicKey, Transaction, type Connection } from '@solana/web3.js';
-import { accounts, getMultisigPda, getProgramConfigPda, instructions, types } from '@sqds/multisig';
-import type { Member } from '../types';
+import { Keypair, PublicKey, Transaction, TransactionInstruction, TransactionMessage, type Connection } from '@solana/web3.js';
+import { accounts, getMultisigPda, getProgramConfigPda, getProposalPda, getTransactionPda, getVaultPda, instructions, types } from '@sqds/multisig';
+import type { Member, Proposal } from '../types';
 import { MULTISIG_THRESHOLD } from './solana';
+
+const MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
 
 export type SquadsCreatePlan = {
   programId: string;
@@ -17,6 +19,23 @@ export type SquadsCreateTransaction = {
   transaction: Transaction;
   createKeypair: Keypair;
   plan: SquadsCreatePlan;
+  blockhash: string;
+  lastValidBlockHeight: number;
+};
+
+export type SquadsProposalPlan = {
+  multisigPda: string;
+  proposalPda: string;
+  transactionPda: string;
+  transactionIndex: string;
+  vaultPda: string;
+  instructionAccounts: number;
+  instructionBytes: number;
+};
+
+export type SquadsProposalTransaction = {
+  transaction: Transaction;
+  plan: SquadsProposalPlan;
   blockhash: string;
   lastValidBlockHeight: number;
 };
@@ -136,6 +155,85 @@ export async function createSquadsMultisigTransaction(
       instruction.data.length,
       instruction.programId,
     ),
+    blockhash,
+    lastValidBlockHeight,
+  };
+}
+
+function getNextTransactionIndex(currentIndex: number | bigint | { toNumber: () => number }) {
+  if (typeof currentIndex === 'bigint') return currentIndex + 1n;
+  if (typeof currentIndex === 'number') return BigInt(currentIndex + 1);
+  return BigInt(currentIndex.toNumber() + 1);
+}
+
+export function getSquadsMembersWithCreator(creatorAddress: string, members: Member[]) {
+  const creatorKey = new PublicKey(creatorAddress).toBase58();
+  const uniqueMembers = members.filter((member) => member.pubkey && member.pubkey !== creatorKey);
+
+  return [
+    { id: 'connected-wallet', name: 'Wallet conectada', role: 'Gestor', pubkey: creatorKey },
+    ...uniqueMembers,
+  ].slice(0, members.length);
+}
+
+export async function createSquadsProposalTransaction(
+  connection: Connection,
+  creatorAddress: string,
+  multisigAddress: string,
+  proposal: Proposal,
+): Promise<SquadsProposalTransaction> {
+  const creator = new PublicKey(creatorAddress);
+  const multisigPda = new PublicKey(multisigAddress);
+  const multisigAccount = await accounts.Multisig.fromAccountAddress(connection, multisigPda, 'confirmed');
+  const transactionIndex = getNextTransactionIndex(multisigAccount.transactionIndex);
+  const vaultIndex = 0;
+  const vaultPda = getVaultPda({ multisigPda, index: vaultIndex })[0];
+  const proposalPda = getProposalPda({ multisigPda, transactionIndex })[0];
+  const transactionPda = getTransactionPda({ multisigPda, index: transactionIndex })[0];
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+  const memoInstruction = new TransactionInstruction({
+    keys: [],
+    programId: MEMO_PROGRAM_ID,
+    data: Buffer.from(`CaixaUni expense approval: ${proposal.title} - BRL ${proposal.amount.toFixed(2)}`),
+  });
+  const transactionMessage = new TransactionMessage({
+    payerKey: vaultPda,
+    recentBlockhash: blockhash,
+    instructions: [memoInstruction],
+  });
+  const createVaultTransactionInstruction = instructions.vaultTransactionCreate({
+    multisigPda,
+    transactionIndex,
+    creator,
+    rentPayer: creator,
+    vaultIndex,
+    ephemeralSigners: 0,
+    transactionMessage,
+    memo: `CaixaUni: ${proposal.id}`,
+  });
+  const createProposalInstruction = instructions.proposalCreate({
+    multisigPda,
+    creator,
+    rentPayer: creator,
+    transactionIndex,
+    isDraft: false,
+  });
+  const transaction = new Transaction({ feePayer: creator, blockhash, lastValidBlockHeight }).add(
+    createVaultTransactionInstruction,
+    createProposalInstruction,
+  );
+
+  return {
+    transaction,
+    plan: {
+      multisigPda: multisigPda.toBase58(),
+      proposalPda: proposalPda.toBase58(),
+      transactionPda: transactionPda.toBase58(),
+      transactionIndex: transactionIndex.toString(),
+      vaultPda: vaultPda.toBase58(),
+      instructionAccounts: createVaultTransactionInstruction.keys.length + createProposalInstruction.keys.length,
+      instructionBytes: createVaultTransactionInstruction.data.length + createProposalInstruction.data.length,
+    },
     blockhash,
     lastValidBlockHeight,
   };

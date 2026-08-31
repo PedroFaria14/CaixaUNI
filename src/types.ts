@@ -40,6 +40,25 @@ export type Proposal = {
   totalApprovers: number;
 };
 
+export type SquadsMultisigState = {
+  status: 'created';
+  multisigPda: string;
+  createSignature: string;
+  creator: string;
+  threshold: number;
+  members: number;
+  createdAt: string;
+};
+
+export type SquadsProposalState = {
+  proposalId: string;
+  proposalPda: string;
+  transactionPda: string;
+  transactionIndex: string;
+  signature: string;
+  createdAt: string;
+};
+
 export type Movement = {
   id: string;
   title: string;
