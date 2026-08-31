@@ -15,7 +15,7 @@ import { createSquadsMultisigPlan, createSquadsMultisigTransaction, type SquadsC
 
 function Web3SetupPanel() {
   const { connection } = useConnection();
-  const { connected, publicKey, sendTransaction } = useWallet();
+  const { connected, publicKey, signTransaction } = useWallet();
   const [rpcStatus, setRpcStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [balance, setBalance] = useState<number | null>(null);
   const [balanceStatus, setBalanceStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -116,27 +116,46 @@ function Web3SetupPanel() {
       return;
     }
 
+    if (!signTransaction) {
+      setCreateError('A wallet conectada não suporta assinatura explícita de transação.');
+      setCreateStatus('error');
+      return;
+    }
+
     setCreateStatus('signing');
     setCreateError('');
     setCreateSignature('');
 
     try {
-      const { transaction, createKeypair, plan } = await createSquadsMultisigTransaction(
+      const { transaction, plan, blockhash, lastValidBlockHeight } = await createSquadsMultisigTransaction(
         connection,
         walletAddress,
         members,
         MULTISIG_THRESHOLD,
       );
-      const signature = await sendTransaction(transaction, connection, { signers: [createKeypair] });
+      const signedTransaction = await signTransaction(transaction);
+      const signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
+        preflightCommitment: 'confirmed',
+        skipPreflight: false,
+      });
 
-      await connection.confirmTransaction(signature, 'confirmed');
+      await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, 'confirmed');
       setSquadsPlan(plan);
       setCreateSignature(signature);
       setCreateStatus('success');
       void loadBalance();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Falha desconhecida ao criar multisig.';
-      setCreateError(message.includes('User rejected') ? 'Assinatura cancelada na wallet.' : message);
+      const normalizedMessage = message.toLowerCase();
+
+      if (normalizedMessage.includes('user rejected') || normalizedMessage.includes('rejected')) {
+        setCreateError('Assinatura cancelada na wallet.');
+      } else if (normalizedMessage.includes('signature') || normalizedMessage.includes('!signature')) {
+        setCreateError('A wallet não retornou uma assinatura válida para a transação. Tente desconectar e conectar novamente.');
+      } else {
+        setCreateError(message);
+      }
+
       setCreateStatus('error');
     }
   };

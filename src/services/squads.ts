@@ -17,6 +17,8 @@ export type SquadsCreateTransaction = {
   transaction: Transaction;
   createKeypair: Keypair;
   plan: SquadsCreatePlan;
+  blockhash: string;
+  lastValidBlockHeight: number;
 };
 
 async function getSquadsTreasury(connection: Connection) {
@@ -134,5 +136,7 @@ export async function createSquadsMultisigTransaction(
       instruction.data.length,
       instruction.programId,
     ),
+    blockhash,
+    lastValidBlockHeight,
   };
 }
