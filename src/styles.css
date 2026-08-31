@@ -704,9 +704,40 @@ textarea {
   background: #fff8ef;
 }
 
+.web3-step.blocked {
+  border-color: rgba(217, 63, 69, 0.26);
+  background: #fff5f5;
+}
+
+.wallet-details {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.wallet-details span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.wallet-details code {
+  overflow-wrap: anywhere;
+  color: var(--green-950);
+  font-size: 0.9rem;
+}
+
 .web3-wallet-action {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-start;
+  gap: 12px;
 }
 
 .web3-note {
