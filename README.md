@@ -89,3 +89,20 @@ pnpm build
 - A multisig criada on-chain tem threshold 1/5 apenas para viabilidade da demonstração. Na vida real seria 3/5 e as wallets dos envolvidos seriam as keys do Squads.
 - Não afirme que blockchain elimina fraude totalmente (depende do oráculo e do mundo físico).
 - A mensagem correta é: o CaixaUni reduz a dependência de controle individual e força a autorização coletiva, sendo o frontend uma ponte amigável para a complexidade técnica do Squads.
+
+## Checklist final de demo
+
+Antes de iniciar a apresentação, verifique:
+
+- [ ] Phantom Wallet está conectada na rede **Devnet**.
+- [ ] A wallet possui saldo em SOL (use faucet se necessário).
+- [ ] O estado local está limpo (clique em "Reiniciar demo" na guia lateral).
+
+Passos on-chain durante a demo:
+- [ ] Criar organização.
+- [ ] Criar multisig.
+- [ ] Criar despesa.
+- [ ] Criar proposta Squads.
+- [ ] Aprovar on-chain.
+- [ ] Atualizar status.
+- [ ] Executar se threshold estiver atingido.
