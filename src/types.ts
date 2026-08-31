@@ -79,6 +79,13 @@ export type SquadsProposalChainStatus = {
   updatedAt: string;
 };
 
+export type SquadsExecutionState = {
+  proposalId: string;
+  executor: string;
+  signature: string;
+  createdAt: string;
+};
+
 export type Movement = {
   id: string;
   title: string;

@@ -46,6 +46,12 @@ export type SquadsApprovalTransaction = {
   lastValidBlockHeight: number;
 };
 
+export type SquadsExecutionTransaction = {
+  transaction: Transaction;
+  blockhash: string;
+  lastValidBlockHeight: number;
+};
+
 async function getSquadsTreasury(connection: Connection) {
   const programConfigPda = getProgramConfigPda({})[0];
   const programConfig = await accounts.ProgramConfig.fromAccountAddress(connection, programConfigPda, 'confirmed');
@@ -294,4 +300,25 @@ export async function getSquadsProposalChainStatus(
     readyToExecute: status === 'Approved' || approvals.length >= multisigAccount.threshold,
     updatedAt: new Date().toISOString(),
   };
+}
+
+export async function createSquadsProposalExecuteTransaction(
+  connection: Connection,
+  executorAddress: string,
+  multisigAddress: string,
+  transactionIndex: string,
+): Promise<SquadsExecutionTransaction> {
+  const member = new PublicKey(executorAddress);
+  const multisigPda = new PublicKey(multisigAddress);
+  const index = BigInt(transactionIndex);
+  const { instruction } = await instructions.vaultTransactionExecute({
+    connection,
+    multisigPda,
+    transactionIndex: index,
+    member,
+  });
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+  const transaction = new Transaction({ feePayer: member, blockhash, lastValidBlockHeight }).add(instruction);
+
+  return { transaction, blockhash, lastValidBlockHeight };
 }

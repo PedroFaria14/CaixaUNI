@@ -5,8 +5,8 @@ import PageTitle from '../components/PageTitle';
 import { members } from '../data/mockData';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { getExplorerTxUrl, shortenAddress } from '../services/solana';
-import { createSquadsProposalApproveTransaction, createSquadsProposalTransaction, getSquadsProposalChainStatus } from '../services/squads';
-import type { Proposal, SquadsApprovalState, SquadsMultisigState, SquadsProposalChainStatus, SquadsProposalState } from '../types';
+import { createSquadsProposalApproveTransaction, createSquadsProposalExecuteTransaction, createSquadsProposalTransaction, getSquadsProposalChainStatus } from '../services/squads';
+import type { Proposal, SquadsApprovalState, SquadsExecutionState, SquadsMultisigState, SquadsProposalChainStatus, SquadsProposalState } from '../types';
 import { money } from '../utils/formatters';
 import { getProposalStatus } from '../utils/proposalStatus';
 
@@ -22,6 +22,7 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
   const [storedMultisig] = useLocalStorage<SquadsMultisigState | null>('caixauni_squadsMultisig', null);
   const [squadsProposals, setSquadsProposals] = useLocalStorage<SquadsProposalState[]>('caixauni_squadsProposals', []);
   const [squadsApprovals, setSquadsApprovals] = useLocalStorage<SquadsApprovalState[]>('caixauni_squadsApprovals', []);
+  const [squadsExecutions, setSquadsExecutions] = useLocalStorage<SquadsExecutionState[]>('caixauni_squadsExecutions', []);
   const [squadsChainStatuses, setSquadsChainStatuses] = useLocalStorage<SquadsProposalChainStatus[]>('caixauni_squadsChainStatuses', []);
   const [squadsStatus, setSquadsStatus] = useLocalStorage<Record<string, 'idle' | 'signing' | 'success' | 'error'>>('caixauni_squadsProposalStatus', {});
   const [squadsError, setSquadsError] = useLocalStorage<Record<string, string>>('caixauni_squadsProposalError', {});
@@ -29,6 +30,8 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
   const [squadsApprovalError, setSquadsApprovalError] = useLocalStorage<Record<string, string>>('caixauni_squadsApprovalError', {});
   const [squadsReadStatus, setSquadsReadStatus] = useLocalStorage<Record<string, 'idle' | 'loading' | 'success' | 'error'>>('caixauni_squadsReadStatus', {});
   const [squadsReadError, setSquadsReadError] = useLocalStorage<Record<string, string>>('caixauni_squadsReadError', {});
+  const [squadsExecutionStatus, setSquadsExecutionStatus] = useLocalStorage<Record<string, 'idle' | 'signing' | 'success' | 'error'>>('caixauni_squadsExecutionStatus', {});
+  const [squadsExecutionError, setSquadsExecutionError] = useLocalStorage<Record<string, string>>('caixauni_squadsExecutionError', {});
   const status = getProposalStatus(proposal);
   const statusLabel = status === 'approved' ? 'Autorizada' : status === 'blocked' ? 'Bloqueada' : 'Aguardando aprovações';
   const missingApprovals = Math.max(proposal.threshold - proposal.approvals.length, 0);
@@ -38,11 +41,14 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
   const currentSquadsStatus = squadsStatus[proposal.id] ?? 'idle';
   const currentSquadsError = squadsError[proposal.id] ?? '';
   const squadsApproval = squadsApprovals.find((item) => item.proposalId === proposal.id && item.member === walletAddress);
+  const squadsExecution = squadsExecutions.find((item) => item.proposalId === proposal.id);
   const squadsChainStatus = squadsChainStatuses.find((item) => item.proposalId === proposal.id);
   const currentSquadsApprovalStatus = squadsApprovalStatus[proposal.id] ?? 'idle';
   const currentSquadsApprovalError = squadsApprovalError[proposal.id] ?? '';
   const currentSquadsReadStatus = squadsReadStatus[proposal.id] ?? 'idle';
   const currentSquadsReadError = squadsReadError[proposal.id] ?? '';
+  const currentSquadsExecutionStatus = squadsExecutionStatus[proposal.id] ?? 'idle';
+  const currentSquadsExecutionError = squadsExecutionError[proposal.id] ?? '';
 
   const createSquadsProposal = async () => {
     if (!storedMultisig) {
@@ -193,6 +199,71 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
     }
   };
 
+  const executeSquadsProposal = async () => {
+    if (!storedMultisig || !squadsProposal) {
+      setSquadsExecutionError((current) => ({ ...current, [proposal.id]: 'Crie a proposta Squads antes de executar on-chain.' }));
+      setSquadsExecutionStatus((current) => ({ ...current, [proposal.id]: 'error' }));
+      return;
+    }
+
+    if (!squadsChainStatus?.readyToExecute) {
+      setSquadsExecutionError((current) => ({ ...current, [proposal.id]: 'A proposta ainda não atingiu o threshold on-chain. Atualize o status após as aprovações.' }));
+      setSquadsExecutionStatus((current) => ({ ...current, [proposal.id]: 'error' }));
+      return;
+    }
+
+    if (!walletAddress || !signTransaction) {
+      setSquadsExecutionError((current) => ({ ...current, [proposal.id]: 'Conecte uma wallet com suporte a assinatura de transação.' }));
+      setSquadsExecutionStatus((current) => ({ ...current, [proposal.id]: 'error' }));
+      return;
+    }
+
+    if (squadsExecution) {
+      setSquadsExecutionError((current) => ({ ...current, [proposal.id]: 'Esta proposta Squads já foi executada.' }));
+      setSquadsExecutionStatus((current) => ({ ...current, [proposal.id]: 'error' }));
+      return;
+    }
+
+    setSquadsExecutionStatus((current) => ({ ...current, [proposal.id]: 'signing' }));
+    setSquadsExecutionError((current) => ({ ...current, [proposal.id]: '' }));
+
+    try {
+      const { transaction, blockhash, lastValidBlockHeight } = await createSquadsProposalExecuteTransaction(
+        connection,
+        walletAddress,
+        storedMultisig.multisigPda,
+        squadsProposal.transactionIndex,
+      );
+      const signedTransaction = await signTransaction(transaction);
+      const signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
+        preflightCommitment: 'confirmed',
+        skipPreflight: false,
+      });
+
+      await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, 'confirmed');
+      setSquadsExecutions((current) => [
+        ...current.filter((item) => item.proposalId !== proposal.id),
+        { proposalId: proposal.id, executor: walletAddress, signature, createdAt: new Date().toISOString() },
+      ]);
+      setSquadsExecutionStatus((current) => ({ ...current, [proposal.id]: 'success' }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Falha desconhecida ao executar proposta Squads.';
+      const normalizedMessage = message.toLowerCase();
+      const friendlyMessage = normalizedMessage.includes('rejected')
+        ? 'Assinatura cancelada na wallet.'
+        : normalizedMessage.includes('threshold') || normalizedMessage.includes('approved')
+          ? 'A proposta ainda não está aprovada para execução na Squads.'
+          : normalizedMessage.includes('executed') || normalizedMessage.includes('stale')
+            ? 'Esta proposta Squads já foi executada ou não pode mais ser executada.'
+            : normalizedMessage.includes('unauthorized') || normalizedMessage.includes('permission')
+              ? 'A wallet conectada não tem permissão para executar esta proposta.'
+              : message;
+
+      setSquadsExecutionError((current) => ({ ...current, [proposal.id]: friendlyMessage }));
+      setSquadsExecutionStatus((current) => ({ ...current, [proposal.id]: 'error' }));
+    }
+  };
+
   return (
     <section className="content-stack page-enter">
       <PageTitle eyebrow="Aprovação coletiva" title={`${proposal.title} — ${money.format(proposal.amount)}`} description="Para o usuário, é uma aprovação simples. Na demo, o fluxo representa a regra multisig que autoriza a movimentação." />
@@ -267,17 +338,24 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
                     </div>
                     <div>
                       <span>Execução</span>
-                      <strong>{squadsChainStatus.readyToExecute ? 'Pronta para executar' : 'Aguardando threshold'}</strong>
+                      <strong>{squadsExecution ? 'Executada' : squadsChainStatus.readyToExecute ? 'Pronta para executar' : 'Aguardando threshold'}</strong>
                     </div>
                   </div>
                 )}
+                {squadsExecution && (
+                  <a href={getExplorerTxUrl(squadsExecution.signature)} target="_blank" rel="noreferrer">Abrir execução no Solana Explorer</a>
+                )}
                 {currentSquadsApprovalError && <div className="form-error" role="alert">{currentSquadsApprovalError}</div>}
                 {currentSquadsReadError && <div className="form-error" role="alert">{currentSquadsReadError}</div>}
+                {currentSquadsExecutionError && <div className="form-error" role="alert">{currentSquadsExecutionError}</div>}
                 <button className="secondary-action" onClick={() => void approveSquadsProposal()} disabled={currentSquadsApprovalStatus === 'signing' || Boolean(squadsApproval)}>
                   {currentSquadsApprovalStatus === 'signing' ? 'Aguardando assinatura...' : squadsApproval ? 'Aprovada na Squads' : 'Aprovar na Squads'}
                 </button>
                 <button className="secondary-action" onClick={() => void refreshSquadsStatus()} disabled={currentSquadsReadStatus === 'loading'}>
                   {currentSquadsReadStatus === 'loading' ? 'Atualizando status...' : 'Atualizar status Squads'}
+                </button>
+                <button className="primary-action" onClick={() => void executeSquadsProposal()} disabled={!squadsChainStatus?.readyToExecute || currentSquadsExecutionStatus === 'signing' || Boolean(squadsExecution)}>
+                  {currentSquadsExecutionStatus === 'signing' ? 'Aguardando assinatura...' : squadsExecution ? 'Executada na Squads' : 'Executar na Squads'}
                 </button>
               </>
             )}
