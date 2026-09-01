@@ -1,6 +1,63 @@
 import { ArrowRight, Check, Landmark, Lock, QrCode, ShieldCheck, Sparkles, Users, WalletCards } from 'lucide-react';
 import LogoMark from '../components/LogoMark';
 
+const realCases = [
+  {
+    caseName: 'Medicina USP',
+    year: '2023',
+    value: '~R$ 927 mil',
+    organization: 'Formatura',
+    event: 'Presidente da comissão retirou fundos investidos alegando má administração da corretora.',
+    weakness: 'Conta coletiva permitia saques e transferências unilaterais sem anuência dos demais membros.',
+    source: 'CNN / G1',
+  },
+  {
+    caseName: 'Direito SC',
+    year: '2025',
+    value: '~R$ 77 mil',
+    organization: 'Formatura',
+    event: 'Valores destinados ao evento teriam sido perdidos em plataformas de jogos de azar.',
+    weakness: 'Recursos coletivos concentrados em uma conta bancária pessoal da presidente da comissão.',
+    source: 'CNN',
+  },
+  {
+    caseName: 'Odontologia UEM',
+    year: '2023',
+    value: '~R$ 85 mil',
+    organization: 'Formatura',
+    event: 'Tesoureira transferiu dinheiro da turma para contas próprias e parou de responder colegas.',
+    weakness: 'Arrecadação via Pix para conta física de estudante, sem auditoria em tempo real.',
+    source: 'G1 PR',
+  },
+  {
+    caseName: 'Medicina UFPR',
+    year: '2018',
+    value: '~R$ 160 mil',
+    organization: 'Atlética',
+    event: 'Presidente de associação atlética desviou fundos ao longo de meses para despesas pessoais.',
+    weakness: 'Falta de segregação: a mesma pessoa aprovava gastos e controlava o acesso bancário.',
+    source: 'RPC / Band',
+  },
+  {
+    caseName: 'Odontologia UFF',
+    year: '2019',
+    value: '~R$ 90 mil',
+    organization: 'Formatura',
+    event: 'Aluna responsável pelo caixa sacou valores e confessou uso para problemas pessoais.',
+    weakness: 'Ausência de coassinatura para liberação de saques de alto valor.',
+    source: 'O Globo',
+  },
+  {
+    caseName: 'Geologia UnB',
+    year: '2019',
+    value: '~R$ 50 mil',
+    organization: 'Formatura',
+    event: 'Turma relatou perda de recursos arrecadados para a formatura.',
+    weakness: 'Caixa coletivo dependia de controle centralizado e baixa verificabilidade operacional.',
+    source: 'Imprensa local',
+  },
+];
+
 type LandingProps = {
   onLogin: () => void;
   onRegister: () => void;
@@ -123,6 +180,32 @@ function Landing({ onLogin, onRegister }: LandingProps) {
           <div className="problem-thesis-card">
             <ShieldCheck size={20} />
             <strong>Dinheiro coletivo. Decisões coletivas.</strong>
+          </div>
+        </div>
+
+        <div className="case-dossier" aria-label="Dossiê CaixaUni com casos reais documentados">
+          <div className="case-dossier-heading">
+            <span className="eyebrow"><Check size={16} /> Dossiê CaixaUni</span>
+            <h3>Casos reais mostram o mesmo padrão de risco.</h3>
+            <p>O problema não é falta de boa-fé. É dinheiro coletivo ainda depender de uma conta individual, uma senha e uma pessoa autorizando sozinha.</p>
+          </div>
+          <div className="case-dossier-grid">
+            {realCases.map((item) => (
+              <article className="case-dossier-card" key={`${item.caseName}-${item.year}`}>
+                <div className="case-dossier-topline">
+                  <span>{item.organization}</span>
+                  <small>{item.year}</small>
+                </div>
+                <h4>{item.caseName}</h4>
+                <strong>{item.value}</strong>
+                <p>{item.event}</p>
+                <div className="case-weakness">
+                  <span>Vulnerabilidade observada</span>
+                  <small>{item.weakness}</small>
+                </div>
+                <em>Fonte: {item.source}</em>
+              </article>
+            ))}
           </div>
         </div>
       </section>

@@ -33,7 +33,6 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
   const [squadsExecutionStatus, setSquadsExecutionStatus] = useLocalStorage<Record<string, 'idle' | 'signing' | 'success' | 'error'>>('caixauni_squadsExecutionStatus', {});
   const [squadsExecutionError, setSquadsExecutionError] = useLocalStorage<Record<string, string>>('caixauni_squadsExecutionError', {});
   const status = getProposalStatus(proposal);
-  const statusLabel = status === 'approved' ? 'Autorizada' : status === 'blocked' ? 'Bloqueada' : 'Aguardando aprovações';
   const missingApprovals = Math.max(proposal.threshold - proposal.approvals.length, 0);
   const progress = Math.min((proposal.approvals.length / proposal.threshold) * 100, 100);
   const walletAddress = publicKey?.toBase58() ?? '';
@@ -49,6 +48,10 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
   const currentSquadsReadError = squadsReadError[proposal.id] ?? '';
   const currentSquadsExecutionStatus = squadsExecutionStatus[proposal.id] ?? 'idle';
   const currentSquadsExecutionError = squadsExecutionError[proposal.id] ?? '';
+  const uiReachedThreshold = proposal.approvals.length >= proposal.threshold;
+  const chainVotes = squadsChainStatus?.approvals.length ?? 0;
+  const chainReachedThreshold = Boolean(squadsChainStatus?.readyToExecute);
+  const needsChainSync = uiReachedThreshold && squadsProposal && !chainReachedThreshold;
 
   const createSquadsProposal = async () => {
     if (!storedMultisig) {
@@ -159,6 +162,7 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
         { proposalId: proposal.id, member: walletAddress, signature, createdAt: new Date().toISOString() },
       ]);
       setSquadsApprovalStatus((current) => ({ ...current, [proposal.id]: 'success' }));
+      await refreshSquadsStatus();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Falha desconhecida ao aprovar proposta Squads.';
       const normalizedMessage = message.toLowerCase();
@@ -287,16 +291,16 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
         <div className="panel approval-card">
           <div className="approval-hero">
             <span className={`status-pill ${status}`}>
-              {status === 'approved' ? <Check size={15} /> : <Lock size={15} />} {statusLabel}
+              {status === 'approved' ? <Check size={15} /> : <Lock size={15} />} Aprovação na interface
             </span>
             <strong>{proposal.approvals.length}/{proposal.threshold}</strong>
-            <span>{missingApprovals === 0 ? 'Threshold atingido' : `Faltam ${missingApprovals} aprovação${missingApprovals > 1 ? 'ões' : ''}`}</span>
+            <span>{missingApprovals === 0 ? 'Pronto para registrar na Squads' : `Faltam ${missingApprovals} aprovação${missingApprovals > 1 ? 'ões' : ''}`}</span>
           </div>
           <h3>{proposal.description}</h3>
           <p>Solicitação criada por {proposal.createdBy}. A movimentação só entra no histórico financeiro quando atingir 3 aprovações.</p>
           <div className="progress-track"><div style={{ width: `${progress}%` }} /></div>
           <div className={status === 'approved' ? 'approved-label' : 'blocked-label'}>
-            {status === 'approved' ? <Check size={16} /> : <Clock3 size={16} />} {status === 'approved' ? 'Movimentação autorizada' : 'Movimentação ainda bloqueada'}
+            {status === 'approved' ? <Check size={16} /> : <Clock3 size={16} />} {status === 'approved' ? 'Aprovação local completa' : 'Movimentação ainda bloqueada'}
           </div>
           <div className="execution-rail" aria-label="Fluxo técnico da aprovação">
             <div className="execution-node done">
@@ -307,12 +311,12 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
             <div className={`execution-node ${status === 'approved' ? 'done' : 'pending'}`}>
               <WalletCards size={18} />
               <strong>Squads</strong>
-              <span>{status === 'approved' ? '3/5 liberado' : 'Aguardando threshold'}</span>
+              <span>{chainReachedThreshold ? `${chainVotes}/${proposal.threshold} on-chain` : status === 'approved' ? 'Aguardando registro on-chain' : 'Aguardando threshold'}</span>
             </div>
-            <div className={`execution-node ${status === 'approved' ? 'done' : 'locked'}`}>
+            <div className={`execution-node ${chainReachedThreshold ? 'done' : 'locked'}`}>
               <Landmark size={18} />
               <strong>Solana</strong>
-              <span>{status === 'approved' ? 'Execução pronta' : 'Bloqueada'}</span>
+              <span>{chainReachedThreshold ? 'Execução pronta' : 'Bloqueada até confirmar'}</span>
             </div>
           </div>
           <div className="squads-plan" aria-label="Proposta Squads vinculada à despesa">
@@ -356,6 +360,12 @@ function ApproveExpense({ proposal, onApprove, onReject }: ApproveExpenseProps) 
                       <span>Execução</span>
                       <strong>{squadsExecution ? 'Executada' : squadsChainStatus.readyToExecute ? 'Pronta para executar' : 'Aguardando threshold'}</strong>
                     </div>
+                  </div>
+                )}
+                {needsChainSync && (
+                  <div className="chain-sync-note" role="status">
+                    <strong>UI e blockchain ainda não estão no mesmo ponto.</strong>
+                    <span>A interface já atingiu {proposal.approvals.length}/{proposal.threshold}. Clique em Aprovar na Squads, assine na wallet e atualize o status até os votos on-chain confirmarem.</span>
                   </div>
                 )}
                 {squadsExecution && (

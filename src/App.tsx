@@ -144,7 +144,7 @@ function App() {
     );
 
     if (!wasApproved && becomesApproved) {
-      showFeedback('Threshold atingido: despesa autorizada e lançada no histórico.');
+      showFeedback('Aprovação local completa: registre/atualize a Squads para confirmar on-chain.');
       setMovements((movementsList) => [
         ...(movementsList.some((movement) => movement.id === `movement-${currentProposal.id}`)
           ? []
