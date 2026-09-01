@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import PageTitle from '../components/PageTitle';
 import type { Proposal } from '../types';
+import { formatCurrencyInput, money, parseCurrencyInput } from '../utils/formatters';
 
 type NewExpenseProps = {
   onCreate: (proposal: Pick<Proposal, 'title' | 'amount' | 'description'>) => void;
@@ -9,12 +10,12 @@ type NewExpenseProps = {
 
 function NewExpense({ onCreate }: NewExpenseProps) {
   const [title, setTitle] = useState('Buffet ABC');
-  const [amount, setAmount] = useState('12000');
+  const [amount, setAmount] = useState(money.format(12000));
   const [description, setDescription] = useState('Entrada de 30% para reserva da data do evento.');
   const [error, setError] = useState('');
 
   const submitProposal = () => {
-    const parsedAmount = Number(amount);
+    const parsedAmount = parseCurrencyInput(amount);
 
     if (!title.trim()) {
       setError('Informe o fornecedor da despesa.');
@@ -40,7 +41,7 @@ function NewExpense({ onCreate }: NewExpenseProps) {
       <PageTitle eyebrow="Nova solicitação" title="Criar despesa" description="O gestor solicita a despesa, mas a movimentação só acontece após o threshold de aprovações." />
       <div className="panel form-panel wide">
         <label>Fornecedor<input value={title} onChange={(event) => setTitle(event.target.value)} required /></label>
-        <label>Valor<input value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="numeric" type="number" min="1" required /></label>
+        <label>Valor<input value={amount} onChange={(event) => setAmount(formatCurrencyInput(event.target.value))} inputMode="numeric" required /></label>
         <label>Justificativa<textarea value={description} onChange={(event) => setDescription(event.target.value)} required /></label>
         {error && <div className="form-error" role="alert">{error}</div>}
         <div className="info-box"><ShieldCheck size={18} /> Esta solicitação será enviada para aprovação 3 de 5 via Squads.</div>

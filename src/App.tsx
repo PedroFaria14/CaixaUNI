@@ -18,6 +18,8 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import type { Movement, Proposal, Screen, User } from './types';
 
+const publicScreens: Screen[] = ['landing', 'login', 'register'];
+
 function App() {
   const [currentScreen, setCurrentScreen] = useLocalStorage<Screen>('caixauni_currentScreen', 'landing');
   const [selectedProposalId, setSelectedProposalId] = useLocalStorage('caixauni_selectedProposalId', 'buffet-abc');
@@ -28,6 +30,9 @@ function App() {
   const [feedback, setFeedback] = useState('');
 
   const selectedProposal = proposals.find((proposal) => proposal.id === selectedProposalId) ?? proposals[0];
+  const canAccessCurrentScreen = currentUser || publicScreens.includes(currentScreen);
+  const visibleScreen = canAccessCurrentScreen ? currentScreen : 'login';
+  const visibleScreens = currentUser ? screens : screens.filter((screen) => publicScreens.includes(screen.id));
 
   const stats = useMemo(() => {
     const received = 221500 + movements.filter((movement) => movement.type === 'income').reduce((sum, movement) => sum + movement.value, 0);
@@ -45,8 +50,9 @@ function App() {
   }, [movements]);
 
   const navigate = (screen: Screen) => {
-    window.location.hash = screen;
-    setCurrentScreen(screen);
+    const nextScreen = currentUser || publicScreens.includes(screen) ? screen : 'login';
+    window.location.hash = nextScreen;
+    setCurrentScreen(nextScreen);
   };
 
   const showFeedback = (message: string) => {
@@ -177,8 +183,12 @@ function App() {
         </button>
 
         <nav className="nav-list">
-          {screens.map((screen) => (
-            <button key={screen.id} className={currentScreen === screen.id ? 'active' : ''} onClick={() => { navigate(screen.id); setIsMobileMenuOpen(false); }}>
+          <div className="demo-control-label">
+            <strong>Controle da Demo</strong>
+            <span>Atalhos para o pitch do hackathon</span>
+          </div>
+          {visibleScreens.map((screen) => (
+            <button key={screen.id} className={visibleScreen === screen.id ? 'active' : ''} onClick={() => { navigate(screen.id); setIsMobileMenuOpen(false); }}>
               {screen.label}
             </button>
           ))}
@@ -213,21 +223,21 @@ function App() {
           </button>
         </header>
 
-        {currentScreen === 'landing' && <Landing onLogin={() => navigate('login')} onRegister={() => navigate('register')} />}
-        {currentScreen === 'login' && <Login onLogin={loginUser} onRegister={() => navigate('register')} />}
-        {currentScreen === 'register' && <Register onRegister={registerUser} onLogin={() => navigate('login')} />}
-        {currentScreen === 'create-organization' && <CreateOrganization onDone={() => { showFeedback('Organização demo criada com regra 3 de 5.'); navigate('dashboard'); }} />}
-        {currentScreen === 'dashboard' && <Dashboard stats={stats} movements={movements} onNewExpense={() => navigate('new-expense')} />}
-        {currentScreen === 'treasury' && <Treasury proposals={proposals} onApprove={openProposal} />}
-        {currentScreen === 'new-expense' && <NewExpense onCreate={createProposal} />}
-        {currentScreen === 'approve-expense' && selectedProposal && <ApproveExpense proposal={selectedProposal} onApprove={approveProposal} onReject={rejectProposal} />}
-        {currentScreen === 'history' && <History movements={movements} />}
-        {currentScreen === 'members' && <Members />}
-        {currentScreen === 'contribute' && <Contribute />}
+        {visibleScreen === 'landing' && <Landing onLogin={() => navigate('login')} onRegister={() => navigate('register')} />}
+        {visibleScreen === 'login' && <Login onLogin={loginUser} onRegister={() => navigate('register')} />}
+        {visibleScreen === 'register' && <Register onRegister={registerUser} onLogin={() => navigate('login')} />}
+        {visibleScreen === 'create-organization' && <CreateOrganization onDone={() => { showFeedback('Organização demo criada com regra 3 de 5.'); navigate('dashboard'); }} />}
+        {visibleScreen === 'dashboard' && <Dashboard stats={stats} movements={movements} onNewExpense={() => navigate('new-expense')} />}
+        {visibleScreen === 'treasury' && <Treasury proposals={proposals} onApprove={openProposal} />}
+        {visibleScreen === 'new-expense' && <NewExpense onCreate={createProposal} />}
+        {visibleScreen === 'approve-expense' && selectedProposal && <ApproveExpense proposal={selectedProposal} onApprove={approveProposal} onReject={rejectProposal} />}
+        {visibleScreen === 'history' && <History movements={movements} />}
+        {visibleScreen === 'members' && <Members />}
+        {visibleScreen === 'contribute' && <Contribute />}
       </main>
 
       {feedback && <div className="toast-feedback" role="status" aria-live="polite">{feedback}</div>}
-      <DemoGuide currentScreen={currentScreen} onNavigate={navigate} onReset={resetDemo} />
+      <DemoGuide currentScreen={visibleScreen} onNavigate={navigate} onReset={resetDemo} />
     </div>
   );
 }
