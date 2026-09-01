@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { initialMovements, initialProposals, members, screens } from './data/mockData';
 import ApproveExpense from './screens/ApproveExpense';
@@ -49,10 +49,21 @@ function App() {
     };
   }, [movements]);
 
+  useEffect(() => {
+    if (!currentUser && !publicScreens.includes(currentScreen)) {
+      window.location.hash = 'login';
+      setCurrentScreen('login');
+    }
+  }, [currentScreen, currentUser, setCurrentScreen]);
+
+  const openScreen = (screen: Screen) => {
+    window.location.hash = screen;
+    setCurrentScreen(screen);
+  };
+
   const navigate = (screen: Screen) => {
     const nextScreen = currentUser || publicScreens.includes(screen) ? screen : 'login';
-    window.location.hash = nextScreen;
-    setCurrentScreen(nextScreen);
+    openScreen(nextScreen);
   };
 
   const showFeedback = (message: string) => {
@@ -68,13 +79,13 @@ function App() {
   const loginUser = () => {
     setCurrentUser({ name: 'Ana Martins', email: 'ana@formatura2027.com', role: 'Aprovador' });
     showFeedback('Modo demo iniciado com usuário aprovador.');
-    navigate('create-organization');
+    openScreen('create-organization');
   };
 
   const registerUser = (user: User) => {
     setCurrentUser(user);
     showFeedback(`Conta demo criada para ${user.name}.`);
-    navigate('create-organization');
+    openScreen('create-organization');
   };
 
   const resetDemo = () => {
