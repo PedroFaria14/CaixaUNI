@@ -152,7 +152,7 @@ Threshold = 3
 Movimentação só acontece com 3 aprovações
 ```
 
-No MVP atual, essa parte ainda está simulada visualmente.
+No MVP atual, essa parte já possui integração real em Devnet para criação de multisig, proposta, aprovação, leitura de status e execução via Squads. A interface local continua existindo para demonstrar a jornada de aprovação de forma simples para usuários não técnicos.
 
 ## O Papel Do Solana Pay
 
@@ -272,7 +272,7 @@ O frontend está pronto para apresentação técnica e pitch.
 
 - Login e cadastro ainda não usam backend real.
 - Organizações, propostas do dashboard e movimentações ainda usam estado local.
-- **Importante:** A regra 3 de 5 é cobrada pela interface visual, mas a multisig que criamos no Squads on-chain usa uma configuração 1/5 de propósito. Por quê? Porque no palco, precisar de 3 celulares/wallets diferentes confirmando transações na hora da apresentação geraria muito risco. Portanto, o fluxo on-chain funciona do início ao fim usando apenas a wallet do apresentador (1/5).
+- **Importante:** a interface local e o status on-chain são camadas diferentes. A UI demonstra a experiência de aprovação coletiva 3/5; a Squads registra o estado real na Solana Devnet. Durante a demo, só devemos executar na Squads depois de atualizar o status e confirmar que o threshold on-chain foi atingido.
 - Solana Pay está representado por um link demonstrativo.
 
 ## O Que Falta Fazer
@@ -312,14 +312,14 @@ Não dizer:
 - isso elimina qualquer fraude;
 - toda comissão de formatura é insegura;
 - blockchain substitui bancos;
-- o produto já tem integração real com Squads se ainda estiver mockado.
+- a aprovação visual sozinha executa a movimentação on-chain.
 
 Dizer:
 
 - reduzimos concentração de controle;
 - movimentações podem exigir múltiplas aprovações;
 - histórico pode ser verificável;
-- blockchain é usada onde faz sentido;
+- blockchain é usada onde faz sentido, especialmente para impor a regra multisig antes da execução;
 - a experiência para o usuário deve parecer um app financeiro comum.
 
 ## Resumo Em Uma Frase

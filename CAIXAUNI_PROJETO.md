@@ -191,7 +191,7 @@ Dados como usuários, descrições, preferências, metadados e configurações p
 
 ## Estado Atual do Código
 
-O projeto atualmente é um frontend mockado usando:
+O projeto atualmente é um frontend funcional de MVP usando:
 
 - React
 - TypeScript
@@ -199,8 +199,11 @@ O projeto atualmente é um frontend mockado usando:
 - pnpm
 - lucide-react
 - CSS puro
+- Solana Wallet Adapter
+- `@solana/web3.js`
+- `@sqds/multisig`
 
-Ainda não existe backend, banco de dados ou integração real com Solana/Squads.
+Ainda não existe backend ou banco de dados real. A integração com Solana/Squads já existe em Devnet para wallet, saldo, criação de multisig, proposta, aprovação, leitura de status e execução.
 
 ## Etapas Já Concluídas
 
@@ -264,9 +267,9 @@ O login e o cadastro ainda são mockados, mas já simulam a criação de um usu�
 
 ### 5. Organização do Código
 
-O `App.tsx` foi reduzido para concentrar apenas:
+O `App.tsx` concentra a orquestração da demo:
 
-- estado mockado;
+- estado local da demo;
 - navegação;
 - handlers principais;
 - seleção da tela atual.
@@ -279,10 +282,20 @@ src/
 │   ├── Metric.tsx
 │   ├── MovementList.tsx
 │   ├── PageTitle.tsx
-│   └── ProposalCard.tsx
+│   ├── ProposalCard.tsx
+│   ├── DemoGuide.tsx
+│   ├── LogoMark.tsx
+│   └── Web3SetupPanel.tsx
 │
 ├── data/
 │   └── mockData.ts
+│
+├── hooks/
+│   ├── useLocalStorage.ts
+│   └── useSquadsProposal.ts
+│
+├── providers/
+│   └── SolanaProvider.tsx
 │
 ├── screens/
 │   ├── ApproveExpense.tsx
@@ -296,6 +309,10 @@ src/
 │   ├── NewExpense.tsx
 │   ├── Register.tsx
 │   └── Treasury.tsx
+│
+├── services/
+│   ├── solana.ts
+│   └── squads.ts
 │
 ├── utils/
 │   ├── formatters.ts
@@ -313,8 +330,8 @@ src/
 Foi implementado um modo demonstração focado em guiar os avaliadores:
 - **Modo Demo Guiado**: Componente interativo que orienta o passo-a-passo (Criar organização → Criar despesa → Aprovar → Histórico).
 - **Persistência em localStorage**: Todo o estado da aplicação agora é salvo no navegador (currentScreen, proposals, movements, currentUser), impedindo que a demonstração quebre com um recarregamento.
-- **Evidências Documentais**: Adicionada seção na Landing Page com os casos reais (Medicina USP e Direito SC) justificando a tese.
-- **Mock Visual da Camada Web3**: Inserido um bloco na Landing Page ilustrando a arquitetura: CaixaUni → Squads → Solana.
+- **Evidências Documentais**: Adicionado Dossiê CaixaUni na Landing Page com casos reais usados para justificar a tese.
+- **Camada Web3 Real em Devnet**: Implementado painel de wallet, RPC, saldo, multisig Squads, proposta, aprovação, status on-chain e execução.
 - **Melhoria Mobile**: Menu lateral ajustado para responsividade em dispositivos móveis (overlay e toggle funcional).
 
 ## Comandos do Projeto
@@ -372,16 +389,15 @@ Resultado esperado:
 
 ### Web3 e Solana (Squads Protocol)
 
-- Estudar integração com a SDK do Squads Protocol.
-- Criar a funcionalidade de "Criar Multisig" atrelada à organização.
-- Mapear a aprovação simulada do CaixaUni para a submissão real de assinaturas no contrato multisig do Squads.
-- Confirmar execução (Liquidação) na Solana após atingir a regra de 3/5.
-- Avaliar integração Solana Pay para contribuições (Bônus).
+- Validar o fluxo completo em Devnet antes de cada apresentação.
+- Testar criação de multisig, proposta, aprovação, atualização de status e execução com saldo suficiente.
+- Evoluir a integração para backend/indexador quando houver persistência real.
+- Avaliar integração Solana Pay real para contribuições.
 
 ### Pesquisa e Pitch
 
-- Montar dossiê documental estendido (se desejar mais casos).
-- Criar roteiro de vídeo de até 5 minutos baseado na Landing Page.
+- Anexar links diretos das fontes do dossiê antes de publicação formal.
+- Usar o roteiro de vídeo de até 5 minutos baseado na Landing Page.
 - Criar slides.
 - Gravar a demonstração guiada.
 
@@ -399,15 +415,17 @@ O frontend está pronto para apresentação como MVP demonstrativo:
 - histórico atualizado apenas quando o threshold é atingido;
 - feedback visual de ações;
 - contribuição com link demonstrativo;
-- conexão de wallet Solana em Devnet.
+- conexão de wallet Solana em Devnet;
+- multisig Squads real em Devnet;
+- proposta, aprovação, status e execução on-chain.
 
 ### Próxima etapa técnica imediata
 
-Iniciar a integração real com Solana por incrementos seguros.
+Validar a demo completa na Vercel e manter os documentos alinhados ao fluxo real.
 
 Objetivo:
 ```text
-Evoluir do fluxo demonstrativo para verificações reais em Devnet, começando por wallet, rede e saldo antes de enviar transações.
+Garantir que a apresentação mostre claramente a diferença entre aprovação local, status on-chain e execução Squads.
 ```
 
 ### Depois disso
@@ -462,7 +480,7 @@ docs: add CaixaUni project overview
 - O projeto está em estágio de MVP e protótipo funcional.
 - O frontend atual usa modo demonstrativo intencionalmente para provar a jornada principal.
 - A prioridade da demo é provar o fluxo `despesa → aprovações → threshold → autorização`.
-- A integração real com Squads/Solana deve vir depois de a experiência principal estar clara.
+- A integração real com Squads/Solana já existe em Devnet, mas depende de wallet, RPC, saldo e confirmação de rede.
 - Solana Pay é complementar; Squads é central para a tese.
 - Não prometer que blockchain elimina fraude.
 - Prometer redução da dependência de controle individual.

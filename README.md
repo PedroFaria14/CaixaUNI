@@ -59,6 +59,19 @@ A landing contém um **Dossiê CaixaUni** com casos públicos documentados na im
 
 > Antes de usar em apresentação pública formal, recomenda-se anexar links diretos das fontes no material final.
 
+### Referências do dossiê
+
+Os cards da landing citam fontes jornalísticas por veículo para manter a interface curta. Para material formal, valide e anexe os links finais das reportagens antes da publicação.
+
+| Caso | Referência a validar/anexar |
+| --- | --- |
+| Medicina USP | Buscar matéria original em CNN Brasil e G1 sobre fundo de formatura de Medicina/USP em 2023. |
+| Direito SC | Buscar matéria original em CNN Brasil sobre perda de aproximadamente R$ 77 mil de formatura em Santa Catarina. |
+| Odontologia UEM | Buscar matéria original do G1 PR sobre caso de formatura de Odontologia/UEM em 2023. |
+| Medicina UFPR | Buscar cobertura da RPC/Band sobre desvio em atlética de Medicina/UFPR em 2018. |
+| Odontologia UFF | Buscar matéria de O Globo sobre caso de formatura de Odontologia/UFF em 2019. |
+| Geologia UnB | Validar fonte jornalística local antes de usar publicamente. |
+
 ---
 
 ## O que o MVP demonstra
@@ -581,12 +594,11 @@ O CaixaUni reduz a dependência de controle individual e transforma regras de ap
 ## Próximos passos possíveis
 
 - Adicionar links diretos das fontes do Dossiê CaixaUni.
-- Extrair a lógica Squads de `ApproveExpense.tsx` para um hook dedicado, como `useSquadsProposal`.
 - Criar backend real para organizações, usuários, propostas e histórico.
 - Persistir dados em banco.
 - Implementar autenticação real.
 - Integrar Solana Pay de ponta a ponta.
-- Melhorar code splitting para reduzir bundle inicial.
+- Evoluir code splitting com lazy loading de telas, se a performance inicial exigir.
 - Criar testes automatizados para fluxos críticos.
 
 ---
